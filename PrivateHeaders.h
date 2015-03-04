@@ -11,4 +11,13 @@
 
 @property(retain, nonatomic) UILabel *eventDateLabel;
 @property(retain, nonatomic) UILabel *relevanceDateLabel;
+@property(readonly, nonatomic) UIView *realContentView;
+
++ (id)defaultColorForEventDate;
++ (id)defaultColorForRelevanceDate;
++ (id)defaultColorForSecondaryText;
++ (id)defaultColorForSubtitleText;
++ (id)defaultColorForPrimaryText;
+
+- (id)_vibrantTextColor;
 @end

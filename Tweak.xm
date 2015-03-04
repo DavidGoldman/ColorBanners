@@ -25,7 +25,8 @@ static BOOL isWhitish(int rgb) {
 
     BOOL isWhite = isWhitish(color);
 
-    cell.backgroundColor = UIColorFromRGBWithAlpha(color, ((isWhite) ? 1 : 0.65));
+    cell.realContentView.backgroundColor = UIColorFromRGBWithAlpha(color, ((isWhite) ? 1 : 0.7));
+
     if (isWhite) {
       cell.eventDateLabel.layer.compositingFilter = nil;
       cell.relevanceDateLabel.layer.compositingFilter = nil;
@@ -37,6 +38,20 @@ static BOOL isWhitish(int rgb) {
       cell.secondaryTextColor = textColor;
       cell.relevanceDateColor = textColor;
       cell.eventDateColor = textColor;
+    } else {
+      NSString *compositingFilter = @"colorDodgeBlendMode";
+      cell.eventDateLabel.layer.compositingFilter = compositingFilter;
+      cell.relevanceDateLabel.layer.compositingFilter = compositingFilter;
+      MSHookIvar<UILabel *>(cell, "_unlockTextLabel").layer.compositingFilter = compositingFilter;
+
+      Class BulletinCell = %c(SBLockScreenBulletinCell);
+      cell.primaryTextColor = [BulletinCell defaultColorForPrimaryText];
+      cell.subtitleTextColor = [BulletinCell defaultColorForSubtitleText];
+      cell.secondaryTextColor = [BulletinCell defaultColorForSecondaryText];
+
+      UIColor *vibrantColor = [cell _vibrantTextColor];
+      cell.relevanceDateColor = vibrantColor;
+      cell.eventDateColor = vibrantColor;
     }
   }
 }

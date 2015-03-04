@@ -1,6 +1,6 @@
 Package: com.golddavid.colorbanners
 Name: ColorBanners
-Depends: firmware (>= 7.0), mobilesubstrate (>= 0.9.5.000), org.thebigboss.colorbadges
+Depends: firmware (>= 8.0), mobilesubstrate (>= 0.9.5.000), org.thebigboss.colorbadges
 Version: 0.0.1
 Architecture: iphoneos-arm
 Description: Color all the things
