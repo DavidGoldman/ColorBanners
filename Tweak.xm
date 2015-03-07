@@ -163,7 +163,7 @@ static NSAttributedString * copyAttributedStringWithColor(NSAttributedString *st
     UIView *grabberView = MSHookIvar<UIView *>(self, "_grabberView");
     grabberView.layer.compositingFilter = nil;
     grabberView.opaque = NO;
-    UIColor *c = (isWhitish(color)) ? [UIColor darkGrayColor] : [UIColorFromRGBWithAlpha(color, 0.5) cbr_darken:0.1];
+    UIColor *c = (isWhitish(color)) ? [UIColor darkGrayColor] : [UIColorFromRGBWithAlpha(color, 0.6) cbr_darken:0.3];
     [self _setGrabberColor:c];
 
     // Colorize the buttons.
