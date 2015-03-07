@@ -14,6 +14,12 @@ static BOOL isWhitish(int rgb) {
   return r > 200 && g > 200 && b > 200;
 }
 
+static NSAttributedString * copyAttributedStringWithColor(NSAttributedString *str, UIColor *color) {
+  NSMutableAttributedString *copy = [str mutableCopy];
+  [copy addAttribute:NSForegroundColorAttributeName value:color range:NSMakeRange(0, [copy length])];
+  return copy;
+}
+
 // TODO(DavidGoldman): Handle case where no icon is present.
 %group LockScreen
 %hook SBLockScreenNotificationListView
@@ -97,7 +103,6 @@ static BOOL isWhitish(int rgb) {
 %end
 
 %group Banners
-
 %hook SBBannerContextView
 
 %new
@@ -111,7 +116,7 @@ static BOOL isWhitish(int rgb) {
 
   // Create/update gradient.
   CBRGradientView *gradientView = (CBRGradientView *)[self viewWithTag:VIEW_TAG];
-  UIColor *color1 = UIColorFromRGBWithAlpha(color, ((isWhitish(color)) ? 1 : 0.7));
+  UIColor *color1 = UIColorFromRGBWithAlpha(color, 0.7);
   UIColor *color2 = ([%c(ColorBadges) isDarkColor:color]) ? [color1 cbr_lighten:0.1] : [color1 cbr_darken:0.1];
   NSArray *colors = @[ (id)color1.CGColor, (id)color2.CGColor ];
 
@@ -125,6 +130,22 @@ static BOOL isWhitish(int rgb) {
   }
 }
 
+%new
+- (void)colorizeText:(int)color {
+  SBDefaultBannerView *view = MSHookIvar<SBDefaultBannerView *>(self, "_contentView");
+  SBDefaultBannerTextView *textView = MSHookIvar<SBDefaultBannerTextView *>(view, "_textView");
+  BOOL isWhite = isWhitish(color);
+  UIColor *dateColor = (isWhite) ? [UIColor darkGrayColor] : UIColorFromRGB(color);
+  if (isWhite) {
+    textView.relevanceDateLabel.layer.compositingFilter = nil;
+  }
+  [view _setRelevanceDateColor:dateColor];
+
+  UIColor *textColor = (isWhite) ? [UIColor darkGrayColor] : [UIColor whiteColor];
+  [textView setPrimaryTextColor:textColor];
+  [textView setSecondaryTextColor:textColor];
+}
+
 - (void)setBannerContext:(SBUIBannerContext *)context withReplaceReason:(int)replaceReason {
   %orig;
 
@@ -134,7 +155,14 @@ static BOOL isWhitish(int rgb) {
     SBBulletinBannerItem *item = [context item];
     UIImage *image = [item iconImage];
     int color = [[cb sharedInstance] colorForImage:image];
+
     [self colorizeBackground:color];
+    [self colorizeText:color];
+
+    id pullDownView = self.pullDownView;
+    if ([pullDownView isKindOfClass:%c(SBBannerButtonView)]) {
+      [(SBBannerButtonView *)pullDownView colorize:color];
+    }
   }
 }
 
@@ -143,6 +171,82 @@ static BOOL isWhitish(int rgb) {
 
   CBRGradientView *gradientView = (CBRGradientView *)[self viewWithTag:VIEW_TAG];
   gradientView.frame = self.bounds;
+}
+
+%end
+
+%hook SBDefaultBannerTextView
+
+%new
+- (void)setPrimaryTextColor:(UIColor *)color {
+  NSAttributedString *s = MSHookIvar<NSAttributedString *>(self, "_primaryTextAttributedString");
+  MSHookIvar<NSAttributedString *>(self, "_primaryTextAttributedString") = copyAttributedStringWithColor(s, color);
+  [s release];
+  
+  s = MSHookIvar<NSAttributedString *>(self, "_primaryTextAttributedStringComponent");
+  MSHookIvar<NSAttributedString *>(self, "_primaryTextAttributedStringComponent") = copyAttributedStringWithColor(s, color);
+  [s release];
+}
+
+%new
+- (void)setSecondaryTextColor:(UIColor *)color {
+  NSAttributedString *s = MSHookIvar<NSAttributedString *>(self, "_secondaryTextAttributedString");
+  MSHookIvar<NSAttributedString *>(self, "_secondaryTextAttributedString") = copyAttributedStringWithColor(s, color);
+  [s release];
+  
+  s = MSHookIvar<NSAttributedString *>(self, "_alternateSecondaryTextAttributedString");
+  MSHookIvar<NSAttributedString *>(self, "_alternateSecondaryTextAttributedString") = copyAttributedStringWithColor(s, color);
+  [s release];
+}
+
+%end
+
+%hook SBBannerButtonView
+
+%new
+- (void)colorize:(int)color {
+  for (UIButton *button in self.buttons) {
+    if ([button isKindOfClass:%c(SBNotificationVibrantButton)]) {
+      [(SBNotificationVibrantButton *)button colorize:color];
+    }
+  }
+}
+
+%end
+
+%hook SBNotificationVibrantButton
+
+%new
+- (void)configureButton:(UIButton *)button
+          withTintColor:(UIColor *)tintColor
+      selectedTintColor:(UIColor *)selectedTintColor
+              textColor:(UIColor *)textColor
+      selectedTextColor:(UIColor *)selectedTextColor {
+  UIImage *buttonImage = [self _buttonImageForColor:tintColor selected:NO];
+  UIImage *selectedImage = [self _buttonImageForColor:selectedTintColor selected:YES];
+  [button setBackgroundImage:buttonImage forState:UIControlStateNormal];
+  [button setBackgroundImage:selectedImage forState:UIControlStateHighlighted];
+  [button setBackgroundImage:selectedImage forState:UIControlStateSelected];
+  [button setTitleColor:textColor forState:UIControlStateNormal];
+  [button setTitleColor:selectedTextColor forState:UIControlStateHighlighted];
+  [button setTitleColor:selectedTextColor forState:UIControlStateSelected];
+}
+
+%new
+- (void)colorize:(int)colorInt {
+  UIColor *color = UIColorFromRGBWithAlpha(colorInt, 0.5);
+  UIColor *darkerColor = [color cbr_darken:0.2];
+  UIColor *textColor = (isWhitish(colorInt) ? [UIColor darkGrayColor] : [UIColor whiteColor]);
+
+  UIButton *overlayButton = MSHookIvar<UIButton *>(self, "_overlayButton");
+  [self configureButton:overlayButton
+          withTintColor:color
+      selectedTintColor:darkerColor
+              textColor:textColor
+      selectedTextColor:textColor];
+
+  UIButton *vibrantButton = MSHookIvar<UIButton *>(self, "_vibrantButton");
+  vibrantButton.hidden = YES;
 }
 
 %end
@@ -182,8 +286,22 @@ static BOOL isWhitish(int rgb) {
 %end
 %end
 
+%group RemoveUnderlay
+%hook SBLockScreenView
+
+- (void)_addLockContentUnderlayWithRequester:(id)requester {
+  if ([requester isEqual:@"NotificationList"]) {
+    return;
+  }
+
+  %orig;
+}
+
+%end
+%end
+
 %ctor {
   %init(LockScreen);
   %init(Banners);
+  %init(RemoveUnderlay);
 }
-
