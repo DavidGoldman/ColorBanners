@@ -46,6 +46,7 @@
 @interface SBDefaultBannerTextView(ColorBanners)
 - (void)setPrimaryTextColor:(UIColor *)color;
 - (void)setSecondaryTextColor:(UIColor *)color;
+- (UIColor *)secondaryTextColor;
 @end
 
 @interface SBUIBannerContext : NSObject

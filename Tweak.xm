@@ -205,6 +205,28 @@ static NSAttributedString * copyAttributedStringWithColor(NSAttributedString *st
   s = MSHookIvar<NSAttributedString *>(self, "_alternateSecondaryTextAttributedString");
   MSHookIvar<NSAttributedString *>(self, "_alternateSecondaryTextAttributedString") = copyAttributedStringWithColor(s, color);
   [s release];
+
+  // TinyBar support.
+  objc_setAssociatedObject(self, @selector(secondaryTextColor), color, OBJC_ASSOCIATION_RETAIN_NONATOMIC);
+}
+
+// TinyBar support.
+%new
+- (UIColor *)secondaryTextColor {
+  return objc_getAssociatedObject(self, @selector(secondaryTextColor));
+}
+
+// TinyBar support.
+- (id)_newAttributedStringForSecondaryText:(id)secondaryText italicized:(BOOL)italicized {
+  NSAttributedString *str = %orig;
+  UIColor *secondaryTextColor = [self secondaryTextColor];
+
+  if (secondaryTextColor) {
+    NSAttributedString *newStr = copyAttributedStringWithColor(str, secondaryTextColor);
+    [str release];
+    return newStr;
+  }
+  return str;
 }
 
 %end
@@ -307,6 +329,8 @@ static NSAttributedString * copyAttributedStringWithColor(NSAttributedString *st
 
 %end
 %end
+
+// TODO(DavidGoldman): Look into ckraiseactiondescriptionviewcontroller.
 
 %ctor {
   %init(LockScreen);
