@@ -159,6 +159,14 @@ static NSAttributedString * copyAttributedStringWithColor(NSAttributedString *st
     [self colorizeBackground:color];
     [self colorizeText:color];
 
+    // Colorize the grabber.
+    UIView *grabberView = MSHookIvar<UIView *>(self, "_grabberView");
+    grabberView.layer.compositingFilter = nil;
+    grabberView.opaque = NO;
+    UIColor *c = (isWhitish(color)) ? [UIColor darkGrayColor] : [UIColorFromRGBWithAlpha(color, 0.5) cbr_darken:0.1];
+    [self _setGrabberColor:c];
+
+    // Colorize the buttons.
     id pullDownView = self.pullDownView;
     if ([pullDownView isKindOfClass:%c(SBBannerButtonView)]) {
       [(SBBannerButtonView *)pullDownView colorize:color];
