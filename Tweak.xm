@@ -330,10 +330,56 @@ static NSAttributedString * copyAttributedStringWithColor(NSAttributedString *st
 %end
 %end
 
-// TODO(DavidGoldman): Look into ckraiseactiondescriptionviewcontroller.
+%group QuickReply
+// %hook CKInlineReplyViewController
+
+// - (void)setupView {
+//   %orig;
+
+//   // To hide the roundedrect altogether.
+//   CKMessageEntryView *entryView = self.entryView;
+//   _UITextFieldRoundedRectBackgroundViewNeue *view = MSHookIvar<id>(entryView, "_coverView");
+//   view.hidden = YES;
+// }
+
+// %end
+
+// For some reason UIBezierPath does not like drawing semi-transparent colors with just fill.
+static BOOL shouldOverrideUIBezierPath = NO;
+
+%hook _UITextFieldRoundedRectBackgroundViewNeue
+
+- (void)updateView {
+  shouldOverrideUIBezierPath = YES;
+  %orig;
+  shouldOverrideUIBezierPath = NO;
+}
+
+%end
+
+%hook UIBezierPath
+
+- (void)fill {
+  if (shouldOverrideUIBezierPath) {
+    [self fillWithBlendMode:kCGBlendModeNormal alpha:0.2];
+    return;
+  }
+
+  %orig;
+}
+
+%end
+%end
 
 %ctor {
-  %init(LockScreen);
-  %init(Banners);
-  %init(RemoveUnderlay);
+  NSString *bundle = [NSBundle mainBundle].bundleIdentifier;
+
+  if ([bundle isEqualToString:@"com.apple.springboard"]) {
+    %init(LockScreen);
+    %init(Banners);
+    %init(RemoveUnderlay);
+  }
+  else if ([bundle isEqualToString:@"com.apple.mobilesms.notification"]) {
+    %init(QuickReply);
+  }
 }

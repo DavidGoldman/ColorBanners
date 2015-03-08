@@ -102,3 +102,18 @@
 - (void)setIsForBannerContextView:(BOOL)flag;
 - (BOOL)isForBannerContextView;
 @end
+
+#pragma mark - QuickReply
+
+@interface _UITextFieldRoundedRectBackgroundViewNeue : UIImageView
+@property(nonatomic, retain) UIColor * strokeColor;
+@property(nonatomic, retain) UIColor * fillColor;
+- (void)updateView;
+@end
+
+@interface CKMessageEntryView : UIView
+@end
+
+@interface CKInlineReplyViewController : UIViewController
+@property(nonatomic, retain) CKMessageEntryView * entryView;
+@end
