@@ -128,7 +128,7 @@ static void showTestBanner(CFNotificationCenterRef center, void *observer, CFStr
 %new
 - (void)colorizeBackground:(int)color {
   CBRGradientView *gradientView = (CBRGradientView *)[self.realContentView viewWithTag:VIEW_TAG];
-  UIColor *color1 = UIColorFromRGBWithAlpha(color, ((isWhitish(color)) ? 1 : 0.7));
+  UIColor *color1 = UIColorFromRGBWithAlpha(color, [CBRPrefsManager sharedInstance].lsAlpha);
   UIColor *color2 = ([%c(ColorBadges) isDarkColor:color]) ? [color1 cbr_lighten:0.2] : [color1 cbr_darken:0.2];
   NSArray *colors = @[ (id)color1.CGColor, (id)color2.CGColor ];
 
@@ -187,9 +187,14 @@ static void showTestBanner(CFNotificationCenterRef center, void *observer, CFStr
   [backdropView setIsForBannerContextView:YES];
   [backdropView _updateFilters];
 
+  // Hide background blur if needed.
+  if ([CBRPrefsManager sharedInstance].removeBannersBlur) {
+    backdropView.hidden = YES;
+  }
+
   // Create/update gradient.
   CBRGradientView *gradientView = (CBRGradientView *)[self viewWithTag:VIEW_TAG];
-  UIColor *color1 = UIColorFromRGBWithAlpha(color, 0.7);
+  UIColor *color1 = UIColorFromRGBWithAlpha(color, [CBRPrefsManager sharedInstance].bannerAlpha);
   UIColor *color2 = ([%c(ColorBadges) isDarkColor:color]) ? [color1 cbr_lighten:0.1] : [color1 cbr_darken:0.1];
   NSArray *colors = @[ (id)color1.CGColor, (id)color2.CGColor ];
 
@@ -403,7 +408,7 @@ static void showTestBanner(CFNotificationCenterRef center, void *observer, CFStr
 %hook SBLockScreenView
 
 - (void)_addLockContentUnderlayWithRequester:(id)requester {
-  if ([CBRPrefsManager sharedInstance].removeBlur && [requester isEqual:@"NotificationList"]) {
+  if ([CBRPrefsManager sharedInstance].removeLSBlur && [requester isEqual:@"NotificationList"]) {
     return;
   }
 

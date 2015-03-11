@@ -12,7 +12,31 @@
 
     {
       cell = PSGroupCell;
+      label = "Banner Alpha";
+    },
+    {
+      cell = PSSliderCell;
+      key = "BannerAlpha";
+      showValue = 1;
+      min = 0;
+      max = 1;
+      default = 0.7;
+      defaults = "com.golddavid.colorbanners";
+      PostNotification = "com.golddavid.colorbanners/reloadprefs";
+    },
+
+
+    {
+      cell = PSGroupCell;
       footerText = "Hides the QuickReply rounded-rectangular text field.";
+    },
+    {
+      cell = PSSwitchCell;
+      label = "Remove Banner Blur";
+      key = "RemoveBannersBlur";
+      default = 0;
+      defaults = "com.golddavid.colorbanners";
+      PostNotification = "com.golddavid.colorbanners/reloadprefs";
     },
     {
       cell = PSSwitchCell;

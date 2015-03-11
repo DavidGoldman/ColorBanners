@@ -7,7 +7,13 @@
 
 #define BANNERS_KEY @"BannersEnabled"
 #define LS_KEY @"LSEnabled"
+
+#define BANNER_ALPHA_KEY @"BannerAlpha"
+#define LS_ALPHA_KEY @"LSAlpha"
+
 #define BLUR_KEY @"RemoveBlur"
+
+#define BANNERS_BLUR_KEY @"RemoveBannersBlur"
 #define RECT_KEY @"HideQRRect"
 #define GRABBER_KEY @"HideGrabber"
 
@@ -64,13 +70,23 @@ static UIColor * UIColorFromNSString(NSString *str) {
 
   _bannersEnabled = [self boolForValue:prefs[BANNERS_KEY] withDefault:YES];
   _lsEnabled = [self boolForValue:prefs[LS_KEY] withDefault:YES];
-  _removeBlur = [self boolForValue:prefs[BLUR_KEY] withDefault:NO];
+
+  _bannerAlpha = [self floatForValue:prefs[BANNER_ALPHA_KEY] withDefault:0.7];
+  _lsAlpha = [self floatForValue:prefs[LS_ALPHA_KEY] withDefault:0.7];
+
+  _removeLSBlur = [self boolForValue:prefs[BLUR_KEY] withDefault:NO];
+
+  _removeBannersBlur = [self boolForValue:prefs[BANNERS_BLUR_KEY] withDefault:NO];
   _hideQRRect = [self boolForValue:prefs[RECT_KEY] withDefault:NO];
   _hideGrabber = [self boolForValue:prefs[GRABBER_KEY] withDefault:NO];
 }
 
 - (BOOL)boolForValue:(NSNumber *)value withDefault:(BOOL)defaultValue {
   return (value) ? [value boolValue] : defaultValue;
+}
+
+- (CGFloat)floatForValue:(NSNumber *)value withDefault:(CGFloat)defaultValue {
+  return (value) ? (CGFloat)[value floatValue] : defaultValue;
 }
 
 - (UIColor *)colorForNSString:(NSString *)string withDefault:(UIColor *)defaultColor {
