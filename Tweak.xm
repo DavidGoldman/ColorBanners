@@ -128,18 +128,23 @@ static void showTestBanner(CFNotificationCenterRef center, void *observer, CFStr
 %new
 - (void)colorizeBackground:(int)color {
   CBRGradientView *gradientView = (CBRGradientView *)[self.realContentView viewWithTag:VIEW_TAG];
-  UIColor *color1 = UIColorFromRGBWithAlpha(color, [CBRPrefsManager sharedInstance].lsAlpha);
-  UIColor *color2 = ([%c(ColorBadges) isDarkColor:color]) ? [color1 cbr_lighten:0.2] : [color1 cbr_darken:0.2];
-  NSArray *colors = @[ (id)color1.CGColor, (id)color2.CGColor ];
+  UIColor *color1 = UIColorFromRGB(color);
 
   if (!gradientView) {
-    gradientView = [[CBRGradientView alloc] initWithFrame:self.frame colors:colors];
+    gradientView = [[CBRGradientView alloc] initWithFrame:self.frame];
     gradientView.tag = VIEW_TAG;
     [self.realContentView insertSubview:gradientView atIndex:0];
     [gradientView release];
-  } else {
+  }
+  gradientView.hidden = NO;
+  gradientView.alpha = [CBRPrefsManager sharedInstance].lsAlpha;
+
+  if ([CBRPrefsManager sharedInstance].useLSGradient) {
+    UIColor *color2 = ([%c(ColorBadges) isDarkColor:color]) ? [color1 cbr_lighten:0.2] : [color1 cbr_darken:0.2];
+    NSArray *colors = @[ (id)color1.CGColor, (id)color2.CGColor ];
     [gradientView setColors:colors];
-    gradientView.hidden = NO;
+  } else {
+    [gradientView setSolidColor:color1];
   }
 }
 
@@ -194,18 +199,23 @@ static void showTestBanner(CFNotificationCenterRef center, void *observer, CFStr
 
   // Create/update gradient.
   CBRGradientView *gradientView = (CBRGradientView *)[self viewWithTag:VIEW_TAG];
-  UIColor *color1 = UIColorFromRGBWithAlpha(color, [CBRPrefsManager sharedInstance].bannerAlpha);
-  UIColor *color2 = ([%c(ColorBadges) isDarkColor:color]) ? [color1 cbr_lighten:0.1] : [color1 cbr_darken:0.1];
-  NSArray *colors = @[ (id)color1.CGColor, (id)color2.CGColor ];
+  UIColor *color1 = UIColorFromRGB(color);
 
   if (!gradientView) {
-    gradientView = [[CBRGradientView alloc] initWithFrame:self.frame colors:colors];
+    gradientView = [[CBRGradientView alloc] initWithFrame:self.frame];
     gradientView.tag = VIEW_TAG;
     [self insertSubview:gradientView atIndex:1];
     [gradientView release];
-  } else {
+  }
+  gradientView.hidden = NO;
+  gradientView.alpha = [CBRPrefsManager sharedInstance].bannerAlpha;
+
+  if ([CBRPrefsManager sharedInstance].useBannerGradient) {
+    UIColor *color2 = ([%c(ColorBadges) isDarkColor:color]) ? [color1 cbr_lighten:0.1] : [color1 cbr_darken:0.1];
+    NSArray *colors = @[ (id)color1.CGColor, (id)color2.CGColor ];
     [gradientView setColors:colors];
-    gradientView.hidden = NO;
+  } else {
+    [gradientView setSolidColor:color1];
   }
 }
 

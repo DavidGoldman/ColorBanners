@@ -7,14 +7,19 @@
 }
 
 // TODO(DavidGoldman): Add support for different gradient directions.
-- (instancetype)initWithFrame:(CGRect)frame colors:(NSArray *)colors {
+- (instancetype)initWithFrame:(CGRect)frame {
   self = [super initWithFrame:frame];
   if (self) {
     self.opaque = NO;
-    _colors = [colors retain];
-    [self refreshGradientLayer];
   }
   return self;
+}
+
+- (void)setSolidColor:(UIColor *)color {
+  self.backgroundColor = color;
+  if (color) {
+    [self setColors:nil];
+  }
 }
 
 - (void)setColors:(NSArray *)colors {
@@ -22,6 +27,9 @@
   [_colors release];
   _colors = colors;
   [self refreshGradientLayer];
+  if (colors) {
+    self.backgroundColor = nil;
+  }
 }
 
 - (void)refreshGradientLayer {

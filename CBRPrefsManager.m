@@ -7,6 +7,8 @@
 
 #define BANNERS_KEY @"BannersEnabled"
 #define LS_KEY @"LSEnabled"
+#define BANNERS_GRADIENT_KEY @"BannerGradient"
+#define LS_GRADIENT_KEY @"LSGradient"
 
 #define BANNER_ALPHA_KEY @"BannerAlpha"
 #define LS_ALPHA_KEY @"LSAlpha"
@@ -70,6 +72,8 @@ static UIColor * UIColorFromNSString(NSString *str) {
 
   _bannersEnabled = [self boolForValue:prefs[BANNERS_KEY] withDefault:YES];
   _lsEnabled = [self boolForValue:prefs[LS_KEY] withDefault:YES];
+  _useBannerGradient = [self boolForValue:prefs[BANNERS_GRADIENT_KEY] withDefault:YES];
+  _useLSGradient = [self boolForValue:prefs[LS_GRADIENT_KEY] withDefault:YES];
 
   _bannerAlpha = [self floatForValue:prefs[BANNER_ALPHA_KEY] withDefault:0.7];
   _lsAlpha = [self floatForValue:prefs[LS_ALPHA_KEY] withDefault:0.7];

@@ -12,7 +12,19 @@
 
     {
       cell = PSGroupCell;
-      label = "Notification Alpha";
+    },
+    {
+      cell = PSSwitchCell;
+      label = "Use Gradient";
+      key = "LSGradient";
+      default = 1;
+      defaults = "com.golddavid.colorbanners";
+      PostNotification = "com.golddavid.colorbanners/reloadprefs";
+    },
+
+    {
+      cell = PSGroupCell;
+      label = "Notification Background Alpha";
     },
     {
       cell = PSSliderCell;

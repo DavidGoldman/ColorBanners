@@ -12,7 +12,19 @@
 
     {
       cell = PSGroupCell;
-      label = "Banner Alpha";
+    },
+    {
+      cell = PSSwitchCell;
+      label = "Use Gradient";
+      key = "BannerGradient";
+      default = 1;
+      defaults = "com.golddavid.colorbanners";
+      PostNotification = "com.golddavid.colorbanners/reloadprefs";
+    },
+
+    {
+      cell = PSGroupCell;
+      label = "Banner Background Alpha";
     },
     {
       cell = PSSliderCell;
@@ -24,7 +36,6 @@
       defaults = "com.golddavid.colorbanners";
       PostNotification = "com.golddavid.colorbanners/reloadprefs";
     },
-
 
     {
       cell = PSGroupCell;

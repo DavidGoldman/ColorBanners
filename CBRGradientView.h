@@ -4,7 +4,8 @@
   NSArray *_colors;
 }
 
-- (instancetype)initWithFrame:(CGRect)frame colors:(NSArray *)colors;
+- (instancetype)initWithFrame:(CGRect)frame;
 - (void)setColors:(NSArray *)colors;
+- (void)setSolidColor:(UIColor *)color;
 
 @end
