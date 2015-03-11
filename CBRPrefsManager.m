@@ -9,6 +9,7 @@
 #define LS_KEY @"LSEnabled"
 #define BLUR_KEY @"RemoveBlur"
 #define RECT_KEY @"HideQRRect"
+#define GRABBER_KEY @"HideGrabber"
 
 // From ColorBadges.h.
 #define GETRED(rgb) ((rgb >> 16) & 0xFF)
@@ -65,6 +66,7 @@ static UIColor * UIColorFromNSString(NSString *str) {
   _lsEnabled = [self boolForValue:prefs[LS_KEY] withDefault:YES];
   _removeBlur = [self boolForValue:prefs[BLUR_KEY] withDefault:NO];
   _hideQRRect = [self boolForValue:prefs[RECT_KEY] withDefault:NO];
+  _hideGrabber = [self boolForValue:prefs[GRABBER_KEY] withDefault:NO];
 }
 
 - (BOOL)boolForValue:(NSNumber *)value withDefault:(BOOL)defaultValue {

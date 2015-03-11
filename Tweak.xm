@@ -2,6 +2,7 @@
 
 #import "Defines.h"
 #import "PrivateHeaders.h"
+#import "CBRAppList.h"
 #import "CBRPrefsManager.h"
 #import "CBRGradientView.h"
 #import "UIColor+ColorBanners.h"
@@ -23,7 +24,62 @@ static NSAttributedString * copyAttributedStringWithColor(NSAttributedString *st
   return copy;
 }
 
-// TODO(DavidGoldman): Handle case where no icon is present.
+static __weak SBLockScreenNotificationListController *lsNotificationListController = nil;
+
+// TODO(DavidGoldman): Figure out how to use BBAction so that it will be dismissed properly.
+// Thanks to PriorityHub.
+static void showTestLockScreenNotification(CFNotificationCenterRef center, void *observer, CFStringRef name, const void *object, CFDictionaryRef userInfo) {
+  [[%c(SBLockScreenManager) sharedInstance] lockUIFromSource:1 withOptions:nil];
+
+  dispatch_after(dispatch_time(DISPATCH_TIME_NOW, 0.7 * NSEC_PER_SEC), dispatch_get_main_queue(), ^{
+    BBBulletin *bulletin = [[[%c(BBBulletinRequest) alloc] init] autorelease];
+    bulletin.title = @"ColorBanners";
+    bulletin.message = @"This is a test notification!";
+    bulletin.sectionID = [CBRAppList randomAppIdentifier];
+    bulletin.defaultAction = [%c(BBAction) action];
+    if ([lsNotificationListController respondsToSelector:@selector(observer:addBulletin:forFeed:playLightsAndSirens:withReply:)])
+      [lsNotificationListController observer:nil addBulletin:bulletin forFeed:2 playLightsAndSirens:YES withReply:nil]; // iOS 8.
+  });
+}
+
+// Thanks for TinyBar (https://github.com/alexzielenski/TinyBar).
+static void showTestBanner(CFNotificationCenterRef center, void *observer, CFStringRef name, const void *object, CFDictionaryRef userInfo) {
+  SBBannerController *controller = [%c(SBBannerController) sharedInstance];
+  if ([controller _bannerContext]) { // Don't do anything if there is already a banner showing.
+    return;
+  }
+  // Not sure if these are needed - see TinyBar.
+  [NSObject cancelPreviousPerformRequestsWithTarget:controller
+                                           selector:@selector(_replaceIntervalElapsed)
+                                             object:nil];
+  [NSObject cancelPreviousPerformRequestsWithTarget:controller
+                                           selector:@selector(_dismissIntervalElapsed)
+                                             object:nil];
+  [controller _replaceIntervalElapsed];
+  [controller _dismissIntervalElapsed];
+
+  BBBulletin *bulletin = [[[%c(BBBulletinRequest) alloc] init] autorelease];
+  bulletin.title = @"ColorBanners";
+  bulletin.message = @"This is a test banner!";
+  bulletin.sectionID = [CBRAppList randomAppIdentifier];
+  bulletin.defaultAction = [%c(BBAction) action];
+
+  SBBulletinBannerController *bc = [%c(SBBulletinBannerController) sharedInstance];
+  [bc observer:nil addBulletin:bulletin forFeed:2];
+}
+
+
+%group TestNotifications
+%hook SBLockScreenNotificationListController
+
+- (void)loadView {
+  %orig;
+  lsNotificationListController = self;
+}
+
+%end
+%end
+
 %group LockScreen
 %hook SBLockScreenNotificationListView
 
@@ -34,6 +90,10 @@ static NSAttributedString * copyAttributedStringWithColor(NSAttributedString *st
   if ([CBRPrefsManager sharedInstance].lsEnabled && [cell isMemberOfClass:sbbc]) {
     Class cb = %c(ColorBadges);
     UIImage *image = [item iconImage];
+    if (!image) {
+      return;
+    }
+
     int color = [[cb sharedInstance] colorForImage:image];
     [cell colorize:color];
   }
@@ -177,12 +237,16 @@ static NSAttributedString * copyAttributedStringWithColor(NSAttributedString *st
       [self colorizeBackground:color];
       [self colorizeText:color];
 
-      // Colorize the grabber.
+      // Colorize/hide the grabber.
       UIView *grabberView = MSHookIvar<UIView *>(self, "_grabberView");
-      grabberView.layer.compositingFilter = nil;
-      grabberView.opaque = NO;
-      UIColor *c = (isWhitish(color)) ? [UIColor darkGrayColor] : [UIColorFromRGBWithAlpha(color, 0.6) cbr_darken:0.3];
-      [self _setGrabberColor:c];
+      if ([CBRPrefsManager sharedInstance].hideGrabber) {
+        grabberView.hidden = YES;
+      } else {
+        grabberView.layer.compositingFilter = nil;
+        grabberView.opaque = NO;
+        UIColor *c = (isWhitish(color)) ? [UIColor darkGrayColor] : [UIColorFromRGBWithAlpha(color, 0.6) cbr_darken:0.3];
+        [self _setGrabberColor:c];
+      }
 
       // Colorize the buttons.
       id pullDownView = self.pullDownView;
@@ -396,9 +460,23 @@ static NSAttributedString * copyAttributedStringWithColor(NSAttributedString *st
   NSString *bundle = [NSBundle mainBundle].bundleIdentifier;
 
   if ([bundle isEqualToString:@"com.apple.springboard"]) {
+    %init(TestNotifications);
     %init(LockScreen);
     %init(Banners);
     %init(RemoveUnderlay);
+
+    CFNotificationCenterAddObserver(CFNotificationCenterGetDarwinNotifyCenter(),
+                                    NULL,
+                                    &showTestLockScreenNotification,
+                                    CFSTR(TEST_LS),
+                                    NULL,
+                                    0);
+    CFNotificationCenterAddObserver(CFNotificationCenterGetDarwinNotifyCenter(),
+                                    NULL,
+                                    &showTestBanner,
+                                    CFSTR(TEST_BANNER),
+                                    NULL,
+                                    0);
   }
   else if ([bundle isEqualToString:@"com.apple.mobilesms.notification"]) {
     %init(QuickReply);

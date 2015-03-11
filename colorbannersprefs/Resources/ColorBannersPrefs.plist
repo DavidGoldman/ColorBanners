@@ -28,6 +28,21 @@
 
     {
       cell = PSGroupCell;
+      label = "Testing";
+    },
+    {
+      cell = PSButtonCell;
+      label = "Test Banner";
+      action = "testBanner";
+    },
+    {
+      cell = PSButtonCell;
+      label = "Test Notification";
+      action = "testLockScreenNotification";
+    },
+
+    {
+      cell = PSGroupCell;
       height = 20;
       footerText = "© 2015 David Goldman";
     }

@@ -1,3 +1,43 @@
+// Test notifications (see PriorityHub and TinyBar).
+
+@interface SBLockScreenManager : NSObject
++ (id)sharedInstance;
+- (void)lockUIFromSource:(int)arg1 withOptions:(id)arg2;
+@end
+
+@interface BBAction : NSObject
++ (id)action;
+@end
+
+@interface BBBulletin
+@property(copy, nonatomic) NSString *sectionID;
+@property(copy, nonatomic) NSString *title;
+@property(copy, nonatomic) NSString *message;
+@property(copy, nonatomic) BBAction *defaultAction;
+@property(retain, nonatomic) NSDate *date;
+@property(copy, nonatomic) NSString *bulletinID;
+@end
+
+@interface BBBulletinRequest : BBBulletin
+@end
+
+@interface SBLockScreenNotificationListController : NSObject
+- (void)observer:(id)arg1 addBulletin:(id)arg2 forFeed:(unsigned long long)arg3 playLightsAndSirens:(BOOL)arg4 withReply:(id)arg5;
+@end
+
+@interface SBBulletinBannerController : NSObject
++ (id)sharedInstance;
+- (void)observer:(id)arg1 addBulletin:(id)arg2 forFeed:(unsigned long long)arg3;
+@end
+
+@interface SBBannerController : NSObject
++ (id)sharedInstance;
+
+- (id)_bannerContext;
+- (void)_replaceIntervalElapsed;
+- (void)_dismissIntervalElapsed;
+@end
+
 // Lockscreen Notifications.
 
 @interface SBAwayBulletinListItem : NSObject

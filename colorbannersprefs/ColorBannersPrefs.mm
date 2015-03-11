@@ -3,6 +3,8 @@
 #import "../NSDistributedNotificationCenter.h"
 
 #define INTERNAL_NOTIFICATION_NAME @"CBRReloadPreferences"
+#define TEST_LS "com.golddavid.colorbanners/test-ls-notification"
+#define TEST_BANNER "com.golddavid.colorbanners/test-banner"
 
 static void refreshPrefs(CFNotificationCenterRef center, void *observer, CFStringRef name, const void *object, CFDictionaryRef userInfo) {
   [[NSDistributedNotificationCenter defaultCenter] postNotificationName:INTERNAL_NOTIFICATION_NAME object:nil];
@@ -63,6 +65,22 @@ static void refreshPrefsVolatile(CFNotificationCenterRef center, void *observer,
 
   NSNumber *defaultValue = [specifier propertyForKey:@"default"];
   return ([defaultValue boolValue]) ? @"On" : @"Off";
+}
+
+- (void)testLockScreenNotification {
+  CFNotificationCenterPostNotification(CFNotificationCenterGetDarwinNotifyCenter(),
+                                       CFSTR(TEST_LS),
+                                       nil,
+                                       nil,
+                                       true);
+}
+
+- (void)testBanner {
+  CFNotificationCenterPostNotification(CFNotificationCenterGetDarwinNotifyCenter(),
+                                       CFSTR(TEST_BANNER),
+                                       nil,
+                                       nil,
+                                       true); 
 }
 
 @end

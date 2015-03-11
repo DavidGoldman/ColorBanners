@@ -7,3 +7,5 @@
 #endif
 
 #define INTERNAL_NOTIFICATION_NAME @"CBRReloadPreferences"
+#define TEST_LS "com.golddavid.colorbanners/test-ls-notification"
+#define TEST_BANNER "com.golddavid.colorbanners/test-banner"

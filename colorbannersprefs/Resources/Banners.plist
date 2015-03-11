@@ -16,6 +16,14 @@
     },
     {
       cell = PSSwitchCell;
+      label = "Hide Grabber";
+      key = "HideGrabber";
+      default = 0;
+      defaults = "com.golddavid.colorbanners";
+      PostNotification = "com.golddavid.colorbanners/reloadprefs";
+    },
+    {
+      cell = PSSwitchCell;
       label = "Hide QR rounded-rect";
       key = "HideQRRect";
       default = 0;
