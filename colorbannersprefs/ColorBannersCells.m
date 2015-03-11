@@ -8,8 +8,8 @@
     self.backgroundColor = [UIColor clearColor];
 
     CGFloat width = [[UIScreen mainScreen] bounds].size.width;
-    CGRect titleFrame = CGRectMake(0, 10, width, 55);
-    CGRect subtitleFrame = CGRectMake(0, 60, width, 19);
+    CGRect titleFrame = CGRectMake(0, 20, width, 55);
+    CGRect subtitleFrame = CGRectMake(0, 75, width, 19);
 
     _titleLabel = [[UILabel alloc] initWithFrame:titleFrame];
     _titleLabel.font = [UIFont fontWithName:@"HelveticaNeue-UltraLight" size:48];
@@ -38,7 +38,7 @@
 }
 
 - (CGFloat)preferredHeightForWidth:(CGFloat)width {
-  return 100.0;
+  return 120.0;
 }
 
 - (CGFloat)preferredHeightForWidth:(CGFloat)width inTableView:(id)tableView {

@@ -16,7 +16,7 @@
     },
     {
       cell = PSSwitchCell;
-      label = "Remove Blurs";
+      label = "Remove Blur";
       key = "RemoveBlur";
       default = 0;
       defaults = "com.golddavid.colorbanners";
