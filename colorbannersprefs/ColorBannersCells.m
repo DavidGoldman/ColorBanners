@@ -27,10 +27,14 @@
 
     [self addSubview:_titleLabel];
     [self addSubview:_subtitleLabel];
-    [_titleLabel release];
-    [_subtitleLabel release];
   }
   return self;
+}
+
+- (void)dealloc {
+  [_titleLabel release];
+  [_subtitleLabel release];
+  [super dealloc];
 }
 
 - (instancetype)initWithSpecifier:(PSSpecifier *)specifier {

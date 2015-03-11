@@ -94,6 +94,24 @@ static void refreshPrefsVolatile(CFNotificationCenterRef center, void *observer,
   return _specifiers;
 }
 
+- (void)testBanner:(id)sender {
+  CFNotificationCenterPostNotification(CFNotificationCenterGetDarwinNotifyCenter(),
+                                       CFSTR(TEST_BANNER),
+                                       nil,
+                                       nil,
+                                       true); 
+}
+
+- (void)viewDidLoad {
+  [super viewDidLoad];
+
+  UIBarButtonItem *button = [[UIBarButtonItem alloc] initWithTitle:@"Test"
+                                                             style:UIBarButtonItemStylePlain
+                                                            target:self
+                                                            action:@selector(testBanner:)];
+  self.navigationItem.rightBarButtonItem = [button autorelease];
+}
+
 @end
 
 @implementation ColorBannersLSPrefsController
@@ -103,6 +121,24 @@ static void refreshPrefsVolatile(CFNotificationCenterRef center, void *observer,
     _specifiers = [[self loadSpecifiersFromPlistName:@"LockScreen" target:self] retain];
   }
   return _specifiers;
+}
+
+- (void)testNotification:(id)sender {
+  CFNotificationCenterPostNotification(CFNotificationCenterGetDarwinNotifyCenter(),
+                                       CFSTR(TEST_LS),
+                                       nil,
+                                       nil,
+                                       true);
+}
+
+- (void)viewDidLoad {
+  [super viewDidLoad];
+
+  UIBarButtonItem *button = [[UIBarButtonItem alloc] initWithTitle:@"Test"
+                                                             style:UIBarButtonItemStylePlain
+                                                            target:self
+                                                            action:@selector(testNotification:)];
+  self.navigationItem.rightBarButtonItem = [button autorelease];
 }
 
 @end
