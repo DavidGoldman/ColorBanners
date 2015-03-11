@@ -12,7 +12,7 @@
 
     {
       cell = PSGroupCell;
-      footerText = "Hides the QuickReply rounded-rectangluar text field.";
+      footerText = "Hides the QuickReply rounded-rectangular text field.";
     },
     {
       cell = PSSwitchCell;
