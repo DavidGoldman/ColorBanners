@@ -350,18 +350,20 @@ static NSAttributedString * copyAttributedStringWithColor(NSAttributedString *st
 %end
 
 %group QuickReply
-// %hook CKInlineReplyViewController
+%hook CKInlineReplyViewController
 
-// - (void)setupView {
-//   %orig;
+- (void)setupView {
+  %orig;
 
-//   // To hide the roundedrect altogether.
-//   CKMessageEntryView *entryView = self.entryView;
-//   _UITextFieldRoundedRectBackgroundViewNeue *view = MSHookIvar<id>(entryView, "_coverView");
-//   view.hidden = YES;
-// }
+  // To hide the rounded-rect altogether.
+  if ([CBRPrefsManager sharedInstance].hideQRRect) {
+    CKMessageEntryView *entryView = self.entryView;
+    _UITextFieldRoundedRectBackgroundViewNeue *view = MSHookIvar<id>(entryView, "_coverView");
+    view.hidden = YES;
+  }
+}
 
-// %end
+%end
 
 // Eclipse fixes.
 // static BOOL shouldOverrideUIBezierPath = NO;

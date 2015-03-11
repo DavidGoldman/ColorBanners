@@ -8,6 +8,19 @@
       default = 1;
       defaults = "com.golddavid.colorbanners";
       PostNotification = "com.golddavid.colorbanners/reloadprefs-volatile";
+    },
+
+    {
+      cell = PSGroupCell;
+      footerText = "Hides the QuickReply rounded-rectangluar text field.";
+    },
+    {
+      cell = PSSwitchCell;
+      label = "Hide QR rounded-rect";
+      key = "HideQRRect";
+      default = 0;
+      defaults = "com.golddavid.colorbanners";
+      PostNotification = "com.golddavid.colorbanners/reloadprefs";
     }
   );
 }
