@@ -7,6 +7,7 @@
 
 #define BANNERS_KEY @"BannersEnabled"
 #define LS_KEY @"LSEnabled"
+#define BLUR_KEY @"RemoveBlur"
 
 // From ColorBadges.h.
 #define GETRED(rgb) ((rgb >> 16) & 0xFF)
@@ -48,7 +49,7 @@ static UIColor * UIColorFromNSString(NSString *str) {
   CFStringRef appID = CFSTR(PREFS_NAME);
   CFArrayRef keyList = CFPreferencesCopyKeyList(appID, kCFPreferencesCurrentUser, kCFPreferencesAnyHost);
   if (!keyList) {
-    CBLOG(@"Unable to obtain preferences keyList!");
+    CBRLOG(@"Unable to obtain preferences keyList!");
     return nil;
   }
   NSDictionary *dictionary = (NSDictionary *)CFPreferencesCopyMultiple(keyList, appID, kCFPreferencesCurrentUser, kCFPreferencesAnyHost);
@@ -61,6 +62,7 @@ static UIColor * UIColorFromNSString(NSString *str) {
 
   _bannersEnabled = [self boolForValue:prefs[BANNERS_KEY] withDefault:YES];
   _lsEnabled = [self boolForValue:prefs[LS_KEY] withDefault:YES];
+  _removeBlur = [self boolForValue:prefs[BLUR_KEY] withDefault:NO];
 }
 
 - (BOOL)boolForValue:(NSNumber *)value withDefault:(BOOL)defaultValue {

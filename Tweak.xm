@@ -1,4 +1,6 @@
 #import "ColorBadges.h"
+
+#import "Defines.h"
 #import "PrivateHeaders.h"
 #import "CBRGradientView.h"
 #import "UIColor+ColorBanners.h"
@@ -320,7 +322,7 @@ static NSAttributedString * copyAttributedStringWithColor(NSAttributedString *st
 %hook SBLockScreenView
 
 - (void)_addLockContentUnderlayWithRequester:(id)requester {
-  if ([requester isEqual:@"NotificationList"]) {
+  if ([CBRPrefsManager sharedInstance].removeBlur && [requester isEqual:@"NotificationList"]) {
     return;
   }
 
@@ -344,31 +346,31 @@ static NSAttributedString * copyAttributedStringWithColor(NSAttributedString *st
 
 // %end
 
-// For some reason UIBezierPath does not like drawing semi-transparent colors with just fill.
-static BOOL shouldOverrideUIBezierPath = NO;
+// Eclipse fixes.
+// static BOOL shouldOverrideUIBezierPath = NO;
 
-%hook _UITextFieldRoundedRectBackgroundViewNeue
+// %hook _UITextFieldRoundedRectBackgroundViewNeue
 
-- (void)updateView {
-  shouldOverrideUIBezierPath = YES;
-  %orig;
-  shouldOverrideUIBezierPath = NO;
-}
+// - (void)updateView {
+//   shouldOverrideUIBezierPath = YES;
+//   %orig;
+//   shouldOverrideUIBezierPath = NO;
+// }
 
-%end
+// %end
 
-%hook UIBezierPath
+// %hook UIBezierPath
 
-- (void)fill {
-  if (shouldOverrideUIBezierPath) {
-    [self fillWithBlendMode:kCGBlendModeNormal alpha:0.2];
-    return;
-  }
+// - (void)fill {
+//   if (shouldOverrideUIBezierPath) {
+//     [self fillWithBlendMode:kCGBlendModeNormal alpha:0.2];
+//     return;
+//   }
 
-  %orig;
-}
+//   %orig;
+// }
 
-%end
+// %end
 %end
 
 %ctor {

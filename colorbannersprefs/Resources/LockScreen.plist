@@ -1,0 +1,26 @@
+{
+  title = "Lock Screen";
+  items = (
+    {
+      cell = PSSwitchCell;
+      label = "Enabled";
+      key = "LSEnabled";
+      default = 1;
+      defaults = "com.golddavid.colorbanners";
+      PostNotification = "com.golddavid.colorbanners/reloadprefs-volatile";
+    },
+
+    {
+      cell = PSGroupCell;
+      footerText = "Remove the notification list's blur.";
+    },
+    {
+      cell = PSSwitchCell;
+      label = "Remove Blurs";
+      key = "RemoveBlur";
+      default = 0;
+      defaults = "com.golddavid.colorbanners";
+      PostNotification = "com.golddavid.colorbanners/reloadprefs";
+    }
+  );
+}

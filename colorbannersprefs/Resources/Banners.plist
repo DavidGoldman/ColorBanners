@@ -1,0 +1,13 @@
+{
+  title = "Banners";
+  items = (
+    {
+      cell = PSSwitchCell;
+      label = "Enabled";
+      key = "BannersEnabled";
+      default = 1;
+      defaults = "com.golddavid.colorbanners";
+      PostNotification = "com.golddavid.colorbanners/reloadprefs-volatile";
+    }
+  );
+}

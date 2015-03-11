@@ -1,0 +1,35 @@
+{
+  title = "ColorBanners";
+  items = (
+    {
+      cell = PSGroupCell;
+      headerCellClass = ColorBannersHeaderCell;
+    },
+    {
+      cell = PSLinkListCell;
+      detail = ColorBannersBannerPrefsController;
+      label = "Banners";
+      icon = "Banners.png";
+      key = "BannersEnabled";
+      default = 1;
+      defaults = "com.golddavid.colorbanners";
+      get = "getLabelForSpecifier:";
+    },
+    {
+      cell = PSLinkListCell;
+      detail = ColorBannersLSPrefsController;
+      label = "Lock Screen";
+      icon = "LockScreen.png";
+      key = "LSEnabled";
+      default = 1;
+      defaults = "com.golddavid.colorbanners";
+      get = "getLabelForSpecifier:";
+    },
+
+    {
+      cell = PSGroupCell;
+      height = 20;
+      footerText = "© 2015 David Goldman";
+    }
+  );
+}
