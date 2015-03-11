@@ -2,6 +2,7 @@
 
 #import "Defines.h"
 #import "PrivateHeaders.h"
+#import "CBRPrefsManager.h"
 #import "CBRGradientView.h"
 #import "UIColor+ColorBanners.h"
 
@@ -29,7 +30,8 @@ static NSAttributedString * copyAttributedStringWithColor(NSAttributedString *st
 - (void)_setContentForTableCell:(SBLockScreenBulletinCell *)cell withItem:(id)item atIndexPath:(id)path {
   %orig;
 
-  if ([cell isMemberOfClass:%c(SBLockScreenBulletinCell)]) {
+  Class sbbc = %c(SBLockScreenBulletinCell);
+  if ([CBRPrefsManager sharedInstance].lsEnabled && [cell isMemberOfClass:sbbc]) {
     Class cb = %c(ColorBadges);
     UIImage *image = [item iconImage];
     int color = [[cb sharedInstance] colorForImage:image];
@@ -40,6 +42,28 @@ static NSAttributedString * copyAttributedStringWithColor(NSAttributedString *st
 %end
 
 %hook SBLockScreenBulletinCell
+
+- (void)prepareForReuse {
+  %orig;
+
+  // Hide/revert all the things!
+  CBRGradientView *gradientView = (CBRGradientView *)[self.realContentView viewWithTag:VIEW_TAG];
+  gradientView.hidden = YES;
+
+  NSString *compositingFilter = @"colorDodgeBlendMode";
+  self.eventDateLabel.layer.compositingFilter = compositingFilter;
+  self.relevanceDateLabel.layer.compositingFilter = compositingFilter;
+  MSHookIvar<UILabel *>(self, "_unlockTextLabel").layer.compositingFilter = compositingFilter;
+
+  Class BulletinCell = %c(SBLockScreenBulletinCell);
+  self.primaryTextColor = [BulletinCell defaultColorForPrimaryText];
+  self.subtitleTextColor = [BulletinCell defaultColorForSubtitleText];
+  self.secondaryTextColor = [BulletinCell defaultColorForSecondaryText];
+
+  UIColor *vibrantColor = [self _vibrantTextColor];
+  self.relevanceDateColor = vibrantColor;
+  self.eventDateColor = vibrantColor;
+}
 
 %new
 - (void)colorizeBackground:(int)color {
@@ -55,6 +79,7 @@ static NSAttributedString * copyAttributedStringWithColor(NSAttributedString *st
     [gradientView release];
   } else {
     [gradientView setColors:colors];
+    gradientView.hidden = NO;
   }
 }
 
@@ -71,20 +96,6 @@ static NSAttributedString * copyAttributedStringWithColor(NSAttributedString *st
     self.secondaryTextColor = textColor;
     self.relevanceDateColor = textColor;
     self.eventDateColor = textColor;
-  } else {
-    NSString *compositingFilter = @"colorDodgeBlendMode";
-    self.eventDateLabel.layer.compositingFilter = compositingFilter;
-    self.relevanceDateLabel.layer.compositingFilter = compositingFilter;
-    MSHookIvar<UILabel *>(self, "_unlockTextLabel").layer.compositingFilter = compositingFilter;
-
-    Class BulletinCell = %c(SBLockScreenBulletinCell);
-    self.primaryTextColor = [BulletinCell defaultColorForPrimaryText];
-    self.subtitleTextColor = [BulletinCell defaultColorForSubtitleText];
-    self.secondaryTextColor = [BulletinCell defaultColorForSecondaryText];
-
-    UIColor *vibrantColor = [self _vibrantTextColor];
-    self.relevanceDateColor = vibrantColor;
-    self.eventDateColor = vibrantColor;
   }
 }
 
@@ -129,6 +140,7 @@ static NSAttributedString * copyAttributedStringWithColor(NSAttributedString *st
     [gradientView release];
   } else {
     [gradientView setColors:colors];
+    gradientView.hidden = NO;
   }
 }
 
@@ -153,25 +165,30 @@ static NSAttributedString * copyAttributedStringWithColor(NSAttributedString *st
 
   SBDefaultBannerView *view = MSHookIvar<SBDefaultBannerView *>(self, "_contentView");
   if ([view isMemberOfClass:%c(SBDefaultBannerView)]) {
-    Class cb = %c(ColorBadges);
-    SBBulletinBannerItem *item = [context item];
-    UIImage *image = [item iconImage];
-    int color = [[cb sharedInstance] colorForImage:image];
+    if (![CBRPrefsManager sharedInstance].bannersEnabled) {
+      CBRGradientView *gradientView = (CBRGradientView *)[self viewWithTag:VIEW_TAG];
+      gradientView.hidden = YES; // Not sure if needed (probably isn't).
+    } else {
+      Class cb = %c(ColorBadges);
+      SBBulletinBannerItem *item = [context item];
+      UIImage *image = [item iconImage];
+      int color = [[cb sharedInstance] colorForImage:image];
 
-    [self colorizeBackground:color];
-    [self colorizeText:color];
+      [self colorizeBackground:color];
+      [self colorizeText:color];
 
-    // Colorize the grabber.
-    UIView *grabberView = MSHookIvar<UIView *>(self, "_grabberView");
-    grabberView.layer.compositingFilter = nil;
-    grabberView.opaque = NO;
-    UIColor *c = (isWhitish(color)) ? [UIColor darkGrayColor] : [UIColorFromRGBWithAlpha(color, 0.6) cbr_darken:0.3];
-    [self _setGrabberColor:c];
+      // Colorize the grabber.
+      UIView *grabberView = MSHookIvar<UIView *>(self, "_grabberView");
+      grabberView.layer.compositingFilter = nil;
+      grabberView.opaque = NO;
+      UIColor *c = (isWhitish(color)) ? [UIColor darkGrayColor] : [UIColorFromRGBWithAlpha(color, 0.6) cbr_darken:0.3];
+      [self _setGrabberColor:c];
 
-    // Colorize the buttons.
-    id pullDownView = self.pullDownView;
-    if ([pullDownView isKindOfClass:%c(SBBannerButtonView)]) {
-      [(SBBannerButtonView *)pullDownView colorize:color];
+      // Colorize the buttons.
+      id pullDownView = self.pullDownView;
+      if ([pullDownView isKindOfClass:%c(SBBannerButtonView)]) {
+        [(SBBannerButtonView *)pullDownView colorize:color];
+      }
     }
   }
 }
