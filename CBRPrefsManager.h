@@ -9,6 +9,12 @@
 @property(nonatomic, assign, getter=shouldUseBannerGradient) BOOL useBannerGradient;
 @property(nonatomic, assign, getter=shouldUseLSGradient) BOOL useLSGradient;
 
+@property(nonatomic, assign, getter=shouldBannersUseConstantColor) BOOL bannersUseConstantColor;
+@property(nonatomic, assign, getter=shouldLSUseConstantColor) BOOL lsUseConstantColor;
+
+@property(nonatomic, assign) int bannerBackgroundColor;
+@property(nonatomic, assign) int lsBackgroundColor;
+
 @property(nonatomic, assign) CGFloat bannerAlpha;
 @property(nonatomic, assign) CGFloat lsAlpha;
 

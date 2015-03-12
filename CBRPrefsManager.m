@@ -27,15 +27,17 @@
 #define GETRED(rgb) ((rgb >> 16) & 0xFF)
 #define GETGREEN(rgb) ((rgb >> 8) & 0xFF)
 #define GETBLUE(rgb) (rgb & 0xFF)
-#define UIColorFromRGB(rgb) [UIColor colorWithRed:GETRED(rgb)/255.0 green:GETGREEN(rgb)/255.0 blue:GETBLUE(rgb)/255.0 alpha:1.0]
+
+// Default to white.
+#define DEFAULT_COLOR 0xFFFFFF
 
 // Expected format: #<hex int>.
-static UIColor * UIColorFromNSString(NSString *str) {
-  unsigned hexColor = 0xFFFFFF; // Default to white.
+static int RGBColorFromNSString(NSString *str) {
+  unsigned hexColor = DEFAULT_COLOR;
   NSScanner *scanner = [NSScanner scannerWithString:str];
   [scanner setScanLocation:1]; // Skip over the '#'.
   [scanner scanHexInt:&hexColor];
-  return UIColorFromRGB(hexColor);
+  return (int)hexColor;
 }
 
 @implementation CBRPrefsManager
@@ -78,6 +80,11 @@ static UIColor * UIColorFromNSString(NSString *str) {
   _lsEnabled = [self boolForValue:prefs[LS_KEY] withDefault:YES];
   _useBannerGradient = [self boolForValue:prefs[BANNERS_GRADIENT_KEY] withDefault:YES];
   _useLSGradient = [self boolForValue:prefs[LS_GRADIENT_KEY] withDefault:YES];
+  _bannersUseConstantColor = [self boolForValue:prefs[BANNER_CONSTANT_KEY] withDefault:NO];
+  _lsUseConstantColor = [self boolForValue:prefs[LS_CONSTANT_KEY] withDefault:NO];
+
+  _bannerBackgroundColor = [self rgbColorForNSString:prefs[BANNER_BG_KEY] withDefault:DEFAULT_COLOR];
+  _lsBackgroundColor = [self rgbColorForNSString:prefs[LS_BG_KEY] withDefault:DEFAULT_COLOR];
 
   _bannerAlpha = [self floatForValue:prefs[BANNER_ALPHA_KEY] withDefault:0.7];
   _lsAlpha = [self floatForValue:prefs[LS_ALPHA_KEY] withDefault:0.7];
@@ -97,8 +104,8 @@ static UIColor * UIColorFromNSString(NSString *str) {
   return (value) ? (CGFloat)[value floatValue] : defaultValue;
 }
 
-- (UIColor *)colorForNSString:(NSString *)string withDefault:(UIColor *)defaultColor {
-  return (string) ? UIColorFromNSString(string) : defaultColor;
+- (int)rgbColorForNSString:(NSString *)string withDefault:(int)defaultValue {
+  return (string) ? RGBColorFromNSString(string) : defaultValue;
 }
 
 - (void)dealloc {

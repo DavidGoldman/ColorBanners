@@ -87,14 +87,21 @@ static void showTestBanner(CFNotificationCenterRef center, void *observer, CFStr
   %orig;
 
   Class sbbc = %c(SBLockScreenBulletinCell);
-  if ([CBRPrefsManager sharedInstance].lsEnabled && [cell isMemberOfClass:sbbc]) {
-    Class cb = %c(ColorBadges);
-    UIImage *image = [item iconImage];
-    if (!image) {
-      return;
+  CBRPrefsManager *prefsManager = [CBRPrefsManager sharedInstance];
+  if (prefsManager.lsEnabled && [cell isMemberOfClass:sbbc]) {
+    int color;
+
+    if (prefsManager.lsUseConstantColor) {
+      color = prefsManager.lsBackgroundColor;
+    } else {
+      Class cb = %c(ColorBadges);
+      UIImage *image = [item iconImage];
+      if (!image) {
+        return;
+      }
+      color = [[cb sharedInstance] colorForImage:image];
     }
 
-    int color = [[cb sharedInstance] colorForImage:image];
     [cell colorize:color];
   }
 }
@@ -240,14 +247,21 @@ static void showTestBanner(CFNotificationCenterRef center, void *observer, CFStr
 
   SBDefaultBannerView *view = MSHookIvar<SBDefaultBannerView *>(self, "_contentView");
   if ([view isMemberOfClass:%c(SBDefaultBannerView)]) {
-    if (![CBRPrefsManager sharedInstance].bannersEnabled) {
+    CBRPrefsManager *prefsManager = [CBRPrefsManager sharedInstance];
+
+    if (!prefsManager.bannersEnabled) {
       CBRGradientView *gradientView = (CBRGradientView *)[self viewWithTag:VIEW_TAG];
       gradientView.hidden = YES; // Not sure if needed (probably isn't).
     } else {
-      Class cb = %c(ColorBadges);
-      SBBulletinBannerItem *item = [context item];
-      UIImage *image = [item iconImage];
-      int color = [[cb sharedInstance] colorForImage:image];
+      int color;
+      if (prefsManager.bannersUseConstantColor) {
+        color = prefsManager.bannerBackgroundColor;
+      } else {
+        Class cb = %c(ColorBadges);
+        SBBulletinBannerItem *item = [context item];
+        UIImage *image = [item iconImage];
+        color = [[cb sharedInstance] colorForImage:image];
+      }
 
       [self colorizeBackground:color];
       [self colorizeText:color];
