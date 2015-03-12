@@ -6,12 +6,16 @@
 #define PREFS_NAME "com.golddavid.colorbanners"
 
 #define BANNERS_KEY @"BannersEnabled"
-#define LS_KEY @"LSEnabled"
 #define BANNERS_GRADIENT_KEY @"BannerGradient"
-#define LS_GRADIENT_KEY @"LSGradient"
-
 #define BANNER_ALPHA_KEY @"BannerAlpha"
+#define BANNER_BG_KEY @"BannerBackgroundColor"
+#define BANNER_CONSTANT_KEY @"BannerUseConstant"
+
+#define LS_KEY @"LSEnabled"
+#define LS_GRADIENT_KEY @"LSGradient"
 #define LS_ALPHA_KEY @"LSAlpha"
+#define LS_BG_KEY @"LSBackgroundColor"
+#define LS_CONSTANT_KEY @"LSUseConstant"
 
 #define BLUR_KEY @"RemoveBlur"
 

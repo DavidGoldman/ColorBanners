@@ -7,7 +7,7 @@
       key = "BannersEnabled";
       default = 1;
       defaults = "com.golddavid.colorbanners";
-      PostNotification = "com.golddavid.colorbanners/reloadprefs-volatile";
+      PostNotification = "com.golddavid.colorbanners/reloadprefs-main";
     },
 
     {
@@ -20,6 +20,34 @@
       default = 1;
       defaults = "com.golddavid.colorbanners";
       PostNotification = "com.golddavid.colorbanners/reloadprefs";
+    },
+    {
+      cell = PSSwitchCell;
+      set = "setBannerConstantColorsEnabled:forSpecifier:";
+      id = "CUSTOM_COLOR_MINUS_ONE";
+      label = "Use Constant Colors";
+      key = "BannerUseConstant";
+      default = 0;
+      defaults = "com.golddavid.colorbanners";
+      PostNotification = "com.golddavid.colorbanners/reloadprefs";
+    },
+
+    {
+      cell = PSGroupCell;
+      label = "Constant Colors";
+      id = "CUSTOM_COLOR_GROUP";
+    },
+    {
+      cell = PSLinkCell;
+      cellClass = PFColorCell;
+      label = "Constant Background Color";
+      title = "Background Color";
+      color_key = "BannerBackgroundColor";
+      color_defaults = "com.golddavid.colorbanners";
+      color_postNotification = "com.golddavid.colorbanners/reloadprefs-banners";
+      color_fallback = "#ffffff";
+      usesRGB = 1;
+      usesAlpha = 0;
     },
 
     {

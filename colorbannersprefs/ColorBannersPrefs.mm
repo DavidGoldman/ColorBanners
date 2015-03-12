@@ -2,6 +2,9 @@
 
 #import "../NSDistributedNotificationCenter.h"
 
+
+#define PREFS_NAME "com.golddavid.colorbanners"
+
 #define INTERNAL_NOTIFICATION_NAME @"CBRReloadPreferences"
 #define TEST_LS "com.golddavid.colorbanners/test-ls-notification"
 #define TEST_BANNER "com.golddavid.colorbanners/test-banner"
@@ -11,7 +14,7 @@ static void refreshPrefs(CFNotificationCenterRef center, void *observer, CFStrin
 }
 
 static void refreshPrefsVolatile(CFNotificationCenterRef center, void *observer, CFStringRef name, const void *object, CFDictionaryRef userInfo) {
-  ColorBannersPrefsListController *controller = (ColorBannersPrefsListController *)observer;
+  PSListController *controller = (PSListController *)observer;
   [controller clearCache];
   [controller reload];
   [[NSDistributedNotificationCenter defaultCenter] postNotificationName:INTERNAL_NOTIFICATION_NAME object:nil];
@@ -31,7 +34,7 @@ static void refreshPrefsVolatile(CFNotificationCenterRef center, void *observer,
     CFNotificationCenterAddObserver(CFNotificationCenterGetDarwinNotifyCenter(), 
                                     self,
                                     &refreshPrefsVolatile,
-                                    CFSTR("com.golddavid.colorbanners/reloadprefs-volatile"),
+                                    CFSTR("com.golddavid.colorbanners/reloadprefs-main"),
                                     NULL,
                                     0);
   }
@@ -45,7 +48,7 @@ static void refreshPrefsVolatile(CFNotificationCenterRef center, void *observer,
                                      NULL);
   CFNotificationCenterRemoveObserver(CFNotificationCenterGetDarwinNotifyCenter(),
                                      self,
-                                     CFSTR("com.golddavid.colorbanners/reloadprefs-volatile"),
+                                     CFSTR("com.golddavid.colorbanners/reloadprefs-main"),
                                      NULL);
   [super dealloc];
 }
@@ -87,9 +90,67 @@ static void refreshPrefsVolatile(CFNotificationCenterRef center, void *observer,
 
 @implementation ColorBannersBannerPrefsController
 
+- (instancetype)init {
+  self = [super init];
+  if (self) {
+    CFNotificationCenterAddObserver(CFNotificationCenterGetDarwinNotifyCenter(), 
+                                    self,
+                                    &refreshPrefsVolatile,
+                                    CFSTR("com.golddavid.colorbanners/reloadprefs-banners"),
+                                    NULL,
+                                    0);
+  }
+  return self;
+}
+
+- (void)dealloc {
+  CFNotificationCenterRemoveObserver(CFNotificationCenterGetDarwinNotifyCenter(),
+                                     self,
+                                     CFSTR("com.golddavid.colorbanners/reloadprefs-banners"),
+                                     NULL);
+  [super dealloc];
+}
+
+// Thanks to MultitaskingGestures (https://github.com/hamzasood/MultitaskingGestures).
+- (void)setBannerConstantColorsEnabled:(NSNumber *)value forSpecifier:(PSSpecifier *)specifier {
+  [self setPreferenceValue:value specifier:specifier];
+  if ([value boolValue]) {
+    int index = [_specifiers indexOfObject:[_specifiers specifierForID:@"CUSTOM_COLOR_MINUS_ONE"]] + 1;
+    [self insertContiguousSpecifiers:_constantColorSpecifiers 
+                             atIndex:index
+                            animated:YES];
+  } else {
+    [self removeContiguousSpecifiers:_constantColorSpecifiers animated:YES];
+  }
+}
+
+// Thanks to MultitaskingGestures (https://github.com/hamzasood/MultitaskingGestures).
 - (id)specifiers {
   if(_specifiers == nil) {
-    _specifiers = [[self loadSpecifiersFromPlistName:@"Banners" target:self] retain];
+    NSMutableArray *specifiers = [[self loadSpecifiersFromPlistName:@"Banners" target:self] mutableCopy];
+
+    [_constantColorSpecifiers release];
+    _constantColorSpecifiers = [[NSMutableArray alloc] init];
+    // Populate the _constantColorSpecifiers array.
+    int index = [specifiers indexOfObject:[specifiers specifierForID:@"CUSTOM_COLOR_MINUS_ONE"]] + 1;
+    for (int i = index; i < specifiers.count; ++i) {
+      PSSpecifier *currentSpec = specifiers[i];
+      if (![currentSpec.identifier isEqualToString:@"CUSTOM_COLOR_GROUP"] &&
+           [[PSTableCell stringFromCellType:currentSpec.cellType] isEqualToString:@"PSGroupCell"]) {
+        break;
+      }
+      [_constantColorSpecifiers addObject:currentSpec];
+    }
+
+    Boolean keyExists = false;
+    if (!CFPreferencesGetAppBooleanValue(CFSTR("BannerUseConstant"),
+                                         CFSTR(PREFS_NAME),
+                                         &keyExists) || !keyExists) {
+      [specifiers removeObjectsInArray:_constantColorSpecifiers];
+    }
+
+    _specifiers = [specifiers copy];
+    [specifiers release];
   }
   return _specifiers;
 }
@@ -116,9 +177,67 @@ static void refreshPrefsVolatile(CFNotificationCenterRef center, void *observer,
 
 @implementation ColorBannersLSPrefsController
 
+- (instancetype)init {
+  self = [super init];
+  if (self) {
+    CFNotificationCenterAddObserver(CFNotificationCenterGetDarwinNotifyCenter(), 
+                                    self,
+                                    &refreshPrefsVolatile,
+                                    CFSTR("com.golddavid.colorbanners/reloadprefs-ls"),
+                                    NULL,
+                                    0);
+  }
+  return self;
+}
+
+- (void)dealloc {
+  CFNotificationCenterRemoveObserver(CFNotificationCenterGetDarwinNotifyCenter(),
+                                     self,
+                                     CFSTR("com.golddavid.colorbanners/reloadprefs-ls"),
+                                     NULL);
+  [super dealloc];
+}
+
+// Thanks to MultitaskingGestures (https://github.com/hamzasood/MultitaskingGestures).
+- (void)setLSConstantColorsEnabled:(NSNumber *)value forSpecifier:(PSSpecifier *)specifier {
+  [self setPreferenceValue:value specifier:specifier];
+  if ([value boolValue]) {
+    int index = [_specifiers indexOfObject:[_specifiers specifierForID:@"CUSTOM_COLOR_MINUS_ONE"]] + 1;
+    [self insertContiguousSpecifiers:_constantColorSpecifiers 
+                             atIndex:index
+                            animated:YES];
+  } else {
+    [self removeContiguousSpecifiers:_constantColorSpecifiers animated:YES];
+  }
+}
+
+// Thanks to MultitaskingGestures (https://github.com/hamzasood/MultitaskingGestures).
 - (id)specifiers {
   if(_specifiers == nil) {
-    _specifiers = [[self loadSpecifiersFromPlistName:@"LockScreen" target:self] retain];
+    NSMutableArray *specifiers = [[self loadSpecifiersFromPlistName:@"LockScreen" target:self] mutableCopy];
+
+    [_constantColorSpecifiers release];
+    _constantColorSpecifiers = [[NSMutableArray alloc] init];
+    // Populate the _constantColorSpecifiers array.
+    int index = [specifiers indexOfObject:[specifiers specifierForID:@"CUSTOM_COLOR_MINUS_ONE"]] + 1;
+    for (int i = index; i < specifiers.count; ++i) {
+      PSSpecifier *currentSpec = specifiers[i];
+      if (![currentSpec.identifier isEqualToString:@"CUSTOM_COLOR_GROUP"] &&
+           [[PSTableCell stringFromCellType:currentSpec.cellType] isEqualToString:@"PSGroupCell"]) {
+        break;
+      }
+      [_constantColorSpecifiers addObject:currentSpec];
+    }
+
+    Boolean keyExists = false;
+    if (!CFPreferencesGetAppBooleanValue(CFSTR("LSUseConstant"),
+                                         CFSTR(PREFS_NAME),
+                                         &keyExists) || !keyExists) {
+      [specifiers removeObjectsInArray:_constantColorSpecifiers];
+    }
+
+    _specifiers = [specifiers copy];
+    [specifiers release];
   }
   return _specifiers;
 }

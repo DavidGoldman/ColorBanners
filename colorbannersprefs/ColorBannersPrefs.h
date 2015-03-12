@@ -3,10 +3,14 @@
 @interface ColorBannersPrefsListController : PSListController
 @end
 
-@interface ColorBannersBannerPrefsController : PSListController
+@interface ColorBannersBannerPrefsController : PSListController {
+  NSMutableArray *_constantColorSpecifiers;
+}
 @end
 
-@interface ColorBannersLSPrefsController : PSListController
+@interface ColorBannersLSPrefsController : PSListController {
+  NSMutableArray *_constantColorSpecifiers;
+}
 @end
 
 @protocol PreferencesTableCustomView
