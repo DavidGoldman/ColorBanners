@@ -12,10 +12,7 @@
 
 // TODO(DavidGoldman): Either use ColorBadges's isDarkColor or improve this.
 static BOOL isWhitish(int rgb) {
-  int r = GETRED(rgb);
-  int g = GETGREEN(rgb);
-  int b = GETBLUE(rgb);
-  return r > 200 && g > 200 && b > 200;
+  return ![%c(ColorBadges) isDarkColor:rgb];
 }
 
 static NSAttributedString * copyAttributedStringWithColor(NSAttributedString *str, UIColor *color) {
@@ -376,7 +373,8 @@ static void showTestBanner(CFNotificationCenterRef center, void *observer, CFStr
 
 %new
 - (void)colorize:(int)colorInt {
-  UIColor *color = UIColorFromRGBWithAlpha(colorInt, 0.5);
+  CGFloat alpha = ([CBRPrefsManager sharedInstance].bannerAlpha / 2) + 0.2;
+  UIColor *color = UIColorFromRGBWithAlpha(colorInt, alpha);
   UIColor *darkerColor = [color cbr_darken:0.2];
   UIColor *textColor = (isWhitish(colorInt) ? [UIColor darkGrayColor] : [UIColor whiteColor]);
 
