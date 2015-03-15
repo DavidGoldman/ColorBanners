@@ -1,6 +1,11 @@
 // Test notifications (see PriorityHub and TinyBar).
 
+@interface SBLockScreenViewController : UIViewController
+@end
+
 @interface SBLockScreenManager : NSObject
+@property(readonly, assign, nonatomic) SBLockScreenViewController *lockScreenViewController;
+
 + (id)sharedInstance;
 - (void)lockUIFromSource:(int)arg1 withOptions:(id)arg2;
 @end
@@ -12,6 +17,7 @@
 @interface BBBulletin
 @property(copy, nonatomic) NSString *sectionID;
 @property(copy, nonatomic) NSString *title;
+@property(copy, nonatomic) NSString * subtitle;
 @property(copy, nonatomic) NSString *message;
 @property(copy, nonatomic) BBAction *defaultAction;
 @property(retain, nonatomic) NSDate *date;

@@ -21,21 +21,35 @@ static NSAttributedString * copyAttributedStringWithColor(NSAttributedString *st
   return copy;
 }
 
-static __weak SBLockScreenNotificationListController *lsNotificationListController = nil;
-
 // TODO(DavidGoldman): Figure out how to use BBAction so that it will be dismissed properly.
 // Thanks to PriorityHub.
 static void showTestLockScreenNotification(CFNotificationCenterRef center, void *observer, CFStringRef name, const void *object, CFDictionaryRef userInfo) {
   [[%c(SBLockScreenManager) sharedInstance] lockUIFromSource:1 withOptions:nil];
 
   dispatch_after(dispatch_time(DISPATCH_TIME_NOW, 0.7 * NSEC_PER_SEC), dispatch_get_main_queue(), ^{
-    BBBulletin *bulletin = [[[%c(BBBulletinRequest) alloc] init] autorelease];
+    BBBulletin *bulletin = [[[%c(BBBulletin) alloc] init] autorelease];
     bulletin.title = @"ColorBanners";
+    bulletin.subtitle = @"This is a test notification!";
     bulletin.message = @"This is a test notification!";
     bulletin.sectionID = [CBRAppList randomAppIdentifier];
-    bulletin.defaultAction = [%c(BBAction) action];
-    if ([lsNotificationListController respondsToSelector:@selector(observer:addBulletin:forFeed:playLightsAndSirens:withReply:)])
-      [lsNotificationListController observer:nil addBulletin:bulletin forFeed:2 playLightsAndSirens:YES withReply:nil]; // iOS 8.
+    bulletin.bulletinID = @"com.golddavid.colorbanners";
+
+    SBLockScreenManager *manager = [%c(SBLockScreenManager) sharedInstance];
+    SBLockScreenViewController *vc = manager.lockScreenViewController;
+    SBLockScreenNotificationListController *lsNotificationListController = MSHookIvar<id>(vc, "_notificationController");
+
+    if (lsNotificationListController) {
+      id observer = MSHookIvar<id>(lsNotificationListController, "_observer");
+
+      // iOS 8.
+      if ([lsNotificationListController respondsToSelector:@selector(observer:addBulletin:forFeed:playLightsAndSirens:withReply:)]) {
+        [lsNotificationListController observer:observer
+                                   addBulletin:bulletin
+                                       forFeed:2
+                           playLightsAndSirens:NO
+                                     withReply:nil];
+      }
+    }
   });
 }
 
@@ -64,18 +78,6 @@ static void showTestBanner(CFNotificationCenterRef center, void *observer, CFStr
   SBBulletinBannerController *bc = [%c(SBBulletinBannerController) sharedInstance];
   [bc observer:nil addBulletin:bulletin forFeed:2];
 }
-
-
-%group TestNotifications
-%hook SBLockScreenNotificationListController
-
-- (void)loadView {
-  %orig;
-  lsNotificationListController = self;
-}
-
-%end
-%end
 
 %group LockScreen
 %hook SBLockScreenNotificationListView
@@ -487,7 +489,6 @@ static void showTestBanner(CFNotificationCenterRef center, void *observer, CFStr
   NSString *bundle = [NSBundle mainBundle].bundleIdentifier;
 
   if ([bundle isEqualToString:@"com.apple.springboard"]) {
-    %init(TestNotifications);
     %init(LockScreen);
     %init(Banners);
     %init(RemoveUnderlay);
