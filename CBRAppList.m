@@ -9,18 +9,25 @@
 
 @implementation CBRAppList
 
-// TODO(DavidGoldman): We can probably just do this once.
 + (NSArray *)allAppIdentifiers {
-  NSMutableArray *array = [NSMutableArray array];
-  SBApplicationController *controller = [objc_getClass("SBApplicationController") sharedInstance];
-  NSSet *hiddenIdentifiers = [self hiddenIdentifiers];
+  static NSArray *allAppIdentifiers = nil;
+  static dispatch_once_t predicate;
 
-  for (NSString *bundleIdentifier in [controller allBundleIdentifiers]) {
-    if (![hiddenIdentifiers containsObject:bundleIdentifier]) {
-      [array addObject:bundleIdentifier];
-    }
-  }
-  return array;
+  dispatch_once(&predicate, ^{ 
+      NSMutableArray *array = [NSMutableArray array];
+      SBApplicationController *controller = [objc_getClass("SBApplicationController") sharedInstance];
+      NSSet *hiddenIdentifiers = [self hiddenIdentifiers];
+
+      for (NSString *bundleIdentifier in [controller allBundleIdentifiers]) {
+        if (![hiddenIdentifiers containsObject:bundleIdentifier]) {
+          [array addObject:bundleIdentifier];
+        }
+      }
+
+      allAppIdentifiers = [array copy];
+  });
+
+  return allAppIdentifiers;
 }
 
 + (NSString *)randomAppIdentifier {
