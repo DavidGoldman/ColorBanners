@@ -10,7 +10,6 @@
 #define UIColorFromRGBWithAlpha(rgb, a) [UIColor colorWithRed:GETRED(rgb)/255.0 green:GETGREEN(rgb)/255.0 blue:GETBLUE(rgb)/255.0 alpha:a]
 #define VIEW_TAG 0xDAE1DEE
 
-// TODO(DavidGoldman): Either use ColorBadges's isDarkColor or improve this.
 static BOOL isWhitish(int rgb) {
   return ![%c(ColorBadges) isDarkColor:rgb];
 }
