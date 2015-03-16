@@ -50,6 +50,15 @@
 - (id)iconImage;
 @end
 
+@interface UITableViewCellDeleteConfirmationView : UIView
+@end
+
+@interface SBTableViewCellDismissActionButton : UIView
+@end
+@interface SBTableViewCellDismissActionButton(ColorBanners)
+- (void)colorize:(int)color;
+@end
+
 @interface SBLockScreenBulletinCell : UIView
 @property(retain, nonatomic) UIColor *eventDateColor;
 @property(retain, nonatomic) UIColor *relevanceDateColor;
@@ -68,11 +77,15 @@
 + (id)defaultColorForPrimaryText;
 
 - (id)_vibrantTextColor;
+- (UITableViewCellDeleteConfirmationView *)_swipeToDeleteConfirmationView;
 @end
 @interface SBLockScreenBulletinCell(ColorBanners)
 - (void)colorize:(int)color;
 - (void)colorizeBackground:(int)color;
 - (void)colorizeText:(int)color;
+
+- (NSNumber *)cbr_color;
+- (void)cbr_setColor:(NSNumber *)color;
 @end
 
 // Banners.

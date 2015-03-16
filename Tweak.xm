@@ -27,10 +27,9 @@ static void showTestLockScreenNotification(CFNotificationCenterRef center, void 
   [[%c(SBLockScreenManager) sharedInstance] lockUIFromSource:1 withOptions:nil];
 
   dispatch_after(dispatch_time(DISPATCH_TIME_NOW, 0.7 * NSEC_PER_SEC), dispatch_get_main_queue(), ^{
-    BBBulletin *bulletin = [[[%c(BBBulletin) alloc] init] autorelease];
+    BBBulletin *bulletin = [[[%c(BBBulletinRequest) alloc] init] autorelease];
     bulletin.title = @"ColorBanners";
     bulletin.subtitle = @"This is a test notification!";
-    bulletin.message = @"This is a test notification!";
     bulletin.sectionID = [CBRAppList randomAppIdentifier];
     bulletin.bulletinID = @"com.golddavid.colorbanners";
 
@@ -116,6 +115,8 @@ static void showTestBanner(CFNotificationCenterRef center, void *observer, CFStr
   CBRGradientView *gradientView = (CBRGradientView *)[self.realContentView viewWithTag:VIEW_TAG];
   gradientView.hidden = YES;
 
+  [self cbr_setColor:nil];
+
   NSString *compositingFilter = @"colorDodgeBlendMode";
   self.eventDateLabel.layer.compositingFilter = compositingFilter;
   self.relevanceDateLabel.layer.compositingFilter = compositingFilter;
@@ -179,11 +180,51 @@ static void showTestBanner(CFNotificationCenterRef center, void *observer, CFStr
 
 %new
 - (void)colorize:(int)color {
+  [self cbr_setColor:@(color)];
   [self colorizeBackground:color];
   [self colorizeText:color];
 }
 
+%new
+- (NSNumber *)cbr_color {
+  return objc_getAssociatedObject(self, @selector(cbr_color));
+}
+
+%new
+- (void)cbr_setColor:(NSNumber *)color {
+  objc_setAssociatedObject(self, @selector(cbr_color), color, OBJC_ASSOCIATION_RETAIN_NONATOMIC);
+}
+
+- (void)_beginSwiping {
+  %orig;
+
+  NSNumber *colorObj = [self cbr_color];
+  if (colorObj) {
+    int color = [colorObj intValue];
+
+    UITableViewCellDeleteConfirmationView *view = [self _swipeToDeleteConfirmationView];
+    NSArray *buttons = MSHookIvar<NSArray *>(view, "_actionButtons");
+    for (id button in buttons) {
+      if ([button isMemberOfClass:%c(SBTableViewCellDismissActionButton)]) {
+        SBTableViewCellDismissActionButton *actionButton = button;
+        [actionButton colorize:color];
+      }
+    }
+  }
+}
+
 %end
+
+%hook SBTableViewCellDismissActionButton
+
+%new
+- (void)colorize:(int)color {
+  CGFloat alpha = [CBRPrefsManager sharedInstance].lsAlpha * 3 / 4;
+  self.backgroundColor = UIColorFromRGBWithAlpha(color, alpha);
+}
+
+%end
+
 %end
 
 %group Banners
