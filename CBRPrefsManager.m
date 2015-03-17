@@ -11,6 +11,10 @@
 #define BANNER_BG_KEY @"BannerBackgroundColor"
 #define BANNER_CONSTANT_KEY @"BannerUseConstant"
 
+#define BANNERS_BLUR_KEY @"RemoveBannersBlur"
+#define RECT_KEY @"HideQRRect"
+#define GRABBER_KEY @"HideGrabber"
+
 #define LS_KEY @"LSEnabled"
 #define LS_GRADIENT_KEY @"LSGradient"
 #define LS_ALPHA_KEY @"LSAlpha"
@@ -18,10 +22,6 @@
 #define LS_CONSTANT_KEY @"LSUseConstant"
 
 #define BLUR_KEY @"RemoveBlur"
-
-#define BANNERS_BLUR_KEY @"RemoveBannersBlur"
-#define RECT_KEY @"HideQRRect"
-#define GRABBER_KEY @"HideGrabber"
 
 // From ColorBadges.h.
 #define GETRED(rgb) ((rgb >> 16) & 0xFF)
@@ -77,23 +77,22 @@ static int RGBColorFromNSString(NSString *str) {
   NSDictionary *prefs = [self prefsDictionary];
 
   _bannersEnabled = [self boolForValue:prefs[BANNERS_KEY] withDefault:YES];
-  _lsEnabled = [self boolForValue:prefs[LS_KEY] withDefault:YES];
   _useBannerGradient = [self boolForValue:prefs[BANNERS_GRADIENT_KEY] withDefault:YES];
-  _useLSGradient = [self boolForValue:prefs[LS_GRADIENT_KEY] withDefault:YES];
-  _bannersUseConstantColor = [self boolForValue:prefs[BANNER_CONSTANT_KEY] withDefault:NO];
-  _lsUseConstantColor = [self boolForValue:prefs[LS_CONSTANT_KEY] withDefault:NO];
-
-  _bannerBackgroundColor = [self rgbColorForNSString:prefs[BANNER_BG_KEY] withDefault:DEFAULT_COLOR];
-  _lsBackgroundColor = [self rgbColorForNSString:prefs[LS_BG_KEY] withDefault:DEFAULT_COLOR];
-
   _bannerAlpha = [self floatForValue:prefs[BANNER_ALPHA_KEY] withDefault:0.7];
-  _lsAlpha = [self floatForValue:prefs[LS_ALPHA_KEY] withDefault:0.7];
-
-  _removeLSBlur = [self boolForValue:prefs[BLUR_KEY] withDefault:NO];
+  _bannerBackgroundColor = [self rgbColorForNSString:prefs[BANNER_BG_KEY] withDefault:DEFAULT_COLOR];
+  _bannersUseConstantColor = [self boolForValue:prefs[BANNER_CONSTANT_KEY] withDefault:NO];
 
   _removeBannersBlur = [self boolForValue:prefs[BANNERS_BLUR_KEY] withDefault:NO];
   _hideQRRect = [self boolForValue:prefs[RECT_KEY] withDefault:NO];
   _hideGrabber = [self boolForValue:prefs[GRABBER_KEY] withDefault:NO];
+
+  _lsEnabled = [self boolForValue:prefs[LS_KEY] withDefault:YES];
+  _useLSGradient = [self boolForValue:prefs[LS_GRADIENT_KEY] withDefault:YES];
+  _lsAlpha = [self floatForValue:prefs[LS_ALPHA_KEY] withDefault:0.7];
+  _lsBackgroundColor = [self rgbColorForNSString:prefs[LS_BG_KEY] withDefault:DEFAULT_COLOR];
+  _lsUseConstantColor = [self boolForValue:prefs[LS_CONSTANT_KEY] withDefault:NO];
+
+  _removeLSBlur = [self boolForValue:prefs[BLUR_KEY] withDefault:NO];
 }
 
 - (BOOL)boolForValue:(NSNumber *)value withDefault:(BOOL)defaultValue {

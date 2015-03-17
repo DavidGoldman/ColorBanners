@@ -21,7 +21,7 @@
 @end
 
 @interface ColorBannersHeaderCell : PSTableCell <PreferencesTableCustomView> {
-	UILabel *_titleLabel;
-	UILabel *_subtitleLabel;
+  UILabel *_titleLabel;
+  UILabel *_subtitleLabel;
 }
 @end
