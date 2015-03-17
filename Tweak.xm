@@ -77,6 +77,21 @@ static void showTestBanner(CFNotificationCenterRef center, void *observer, CFStr
   [bc observer:nil addBulletin:bulletin forFeed:2];
 }
 
+static void setLastUsedColor(int color) {
+  BOOL isWhite = isWhitish(color);
+
+  CFStringRef appID = CFSTR("com.golddavid.colorbanners");
+  CFPreferencesSetAppValue(CFSTR("LastColor"), @(color), appID);
+  CFPreferencesSetAppValue(CFSTR("LastColorIsWhitish"), @(isWhite), appID);
+  CFPreferencesAppSynchronize(appID);
+  
+  CFNotificationCenterPostNotification(CFNotificationCenterGetDarwinNotifyCenter(),
+                                       CFSTR(REFRESH_HEADER),
+                                       nil,
+                                       nil,
+                                       true);
+}
+
 %group LockScreen
 %hook SBLockScreenNotificationListView
 
@@ -180,6 +195,8 @@ static void showTestBanner(CFNotificationCenterRef center, void *observer, CFStr
 %new
 - (void)colorize:(int)color {
   [self cbr_setColor:@(color)];
+  setLastUsedColor(color);
+
   [self colorizeBackground:color];
   [self colorizeText:color];
 }
@@ -301,6 +318,10 @@ static void showTestBanner(CFNotificationCenterRef center, void *observer, CFStr
         UIImage *image = [item iconImage];
         color = [[cb sharedInstance] colorForImage:image];
       }
+
+      // TODO(DavidGoldman): Break this into a separate colorize: method.
+
+      setLastUsedColor(color);
 
       [self colorizeBackground:color];
       [self colorizeText:color];

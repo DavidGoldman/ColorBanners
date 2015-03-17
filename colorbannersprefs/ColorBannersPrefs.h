@@ -24,4 +24,6 @@
   UILabel *_titleLabel;
   UILabel *_subtitleLabel;
 }
+
+- (void)refreshGradientLayer:(BOOL)animated;
 @end
