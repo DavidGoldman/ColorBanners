@@ -108,6 +108,7 @@ static void refreshPrefsVolatile(CFNotificationCenterRef center, void *observer,
                                      self,
                                      CFSTR("com.golddavid.colorbanners/reloadprefs-banners"),
                                      NULL);
+  [_constantColorSpecifiers release];
   [super dealloc];
 }
 
@@ -195,6 +196,7 @@ static void refreshPrefsVolatile(CFNotificationCenterRef center, void *observer,
                                      self,
                                      CFSTR("com.golddavid.colorbanners/reloadprefs-ls"),
                                      NULL);
+  [_constantColorSpecifiers release];
   [super dealloc];
 }
 
