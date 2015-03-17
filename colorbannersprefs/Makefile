@@ -1,10 +1,10 @@
 include theos/makefiles/common.mk
 
 BUNDLE_NAME = ColorBannersPrefs
-ColorBannersPrefs_FILES = ColorBannersPrefs.mm ColorBannersCells.m ../UIColor+ColorBanners.m
+ColorBannersPrefs_FILES = ColorBannersPrefs.mm ColorBannersCells.m
 ColorBannersPrefs_INSTALL_PATH = /Library/PreferenceBundles
 ColorBannersPrefs_LIBRARIES = colorpicker
-ColorBannersPrefs_FRAMEWORKS = UIKit QuartzCore
+ColorBannersPrefs_FRAMEWORKS = UIKit
 ColorBannersPrefs_PRIVATE_FRAMEWORKS = Preferences
 
 include $(THEOS_MAKE_PATH)/bundle.mk
