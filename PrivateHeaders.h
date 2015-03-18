@@ -17,7 +17,7 @@
 @interface BBBulletin
 @property(copy, nonatomic) NSString *sectionID;
 @property(copy, nonatomic) NSString *title;
-@property(copy, nonatomic) NSString * subtitle;
+@property(copy, nonatomic) NSString *subtitle;
 @property(copy, nonatomic) NSString *message;
 @property(copy, nonatomic) BBAction *defaultAction;
 @property(retain, nonatomic) NSDate *date;
@@ -47,6 +47,8 @@
 // Lockscreen Notifications.
 
 @interface SBAwayBulletinListItem : NSObject
+@property(retain) BBBulletin *activeBulletin;
+
 - (id)iconImage;
 @end
 
@@ -92,6 +94,7 @@
 
 @interface SBBulletinBannerItem : NSObject
 - (id)iconImage;
+- (BBBulletin *)seedBulletin;
 @end
 
 @interface SBDefaultBannerView : UIView

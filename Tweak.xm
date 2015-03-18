@@ -3,8 +3,9 @@
 #import "Defines.h"
 #import "PrivateHeaders.h"
 #import "CBRAppList.h"
-#import "CBRPrefsManager.h"
+#import "CBRColorCache.h"
 #import "CBRGradientView.h"
+#import "CBRPrefsManager.h"
 #import "UIColor+ColorBanners.h"
 
 #define UIColorFromRGBWithAlpha(rgb, a) [UIColor colorWithRed:GETRED(rgb)/255.0 green:GETGREEN(rgb)/255.0 blue:GETBLUE(rgb)/255.0 alpha:a]
@@ -80,7 +81,9 @@ static void showTestBanner(CFNotificationCenterRef center, void *observer, CFStr
 %group LockScreen
 %hook SBLockScreenNotificationListView
 
-- (void)_setContentForTableCell:(SBLockScreenBulletinCell *)cell withItem:(id)item atIndexPath:(id)path {
+- (void)_setContentForTableCell:(SBLockScreenBulletinCell *)cell
+                       withItem:(SBAwayBulletinListItem *)item
+                    atIndexPath:(id)path {
   %orig;
 
   Class sbbc = %c(SBLockScreenBulletinCell);
@@ -91,12 +94,12 @@ static void showTestBanner(CFNotificationCenterRef center, void *observer, CFStr
     if (prefsManager.lsUseConstantColor) {
       color = prefsManager.lsBackgroundColor;
     } else {
-      Class cb = %c(ColorBadges);
       UIImage *image = [item iconImage];
       if (!image) {
         return;
       }
-      color = [[cb sharedInstance] colorForImage:image];
+      NSString *identifier = item.activeBulletin.sectionID;
+      color = [[CBRColorCache sharedInstance] colorForIdentifier:identifier image:image];
     }
 
     [cell colorize:color];
@@ -146,7 +149,7 @@ static void showTestBanner(CFNotificationCenterRef center, void *observer, CFStr
   gradientView.alpha = [CBRPrefsManager sharedInstance].lsAlpha;
 
   if ([CBRPrefsManager sharedInstance].useLSGradient) {
-    UIColor *color2 = ([%c(ColorBadges) isDarkColor:color]) ? [color1 cbr_lighten:0.2] : [color1 cbr_darken:0.2];
+    UIColor *color2 = (isWhitish(color)) ? [color1 cbr_darken:0.2] : [color1 cbr_lighten:0.2];
     NSArray *colors = @[ (id)color1.CGColor, (id)color2.CGColor ];
     [gradientView setColors:colors];
   } else {
@@ -257,7 +260,7 @@ static void showTestBanner(CFNotificationCenterRef center, void *observer, CFStr
   gradientView.alpha = [CBRPrefsManager sharedInstance].bannerAlpha;
 
   if ([CBRPrefsManager sharedInstance].useBannerGradient) {
-    UIColor *color2 = ([%c(ColorBadges) isDarkColor:color]) ? [color1 cbr_lighten:0.1] : [color1 cbr_darken:0.1];
+    UIColor *color2 = (isWhitish(color)) ? [color1 cbr_darken:0.1] : [color1 cbr_lighten:0.1];
     NSArray *colors = @[ (id)color1.CGColor, (id)color2.CGColor ];
     [gradientView setColors:colors];
   } else {
@@ -296,10 +299,10 @@ static void showTestBanner(CFNotificationCenterRef center, void *observer, CFStr
       if (prefsManager.bannersUseConstantColor) {
         color = prefsManager.bannerBackgroundColor;
       } else {
-        Class cb = %c(ColorBadges);
         SBBulletinBannerItem *item = [context item];
+        NSString *identifier = [item seedBulletin].sectionID;
         UIImage *image = [item iconImage];
-        color = [[cb sharedInstance] colorForImage:image];
+        color = [[CBRColorCache sharedInstance] colorForIdentifier:identifier image:image];
       }
 
       [self colorizeBackground:color];
