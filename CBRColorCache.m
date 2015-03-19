@@ -3,7 +3,39 @@
 #import "ColorBadges.h"
 #import "Defines.h"
 
+#import <objc/runtime.h>
+
 #define DEFAULT_COUNT_LIMIT 100
+
+static id bucket_Class = nil;
+static id cb_Class = nil;
+
+static void proxy_init() {
+  static dispatch_once_t predicate;
+
+  dispatch_once(&predicate, ^{
+      bucket_Class = objc_getClass("CBRBucket");
+      cb_Class = objc_getClass("ColorBadges");
+  });
+}
+
+static int proxy_colorForImage(UIImage *image) {
+  proxy_init();
+
+  if (bucket_Class) {
+    return [bucket_Class colorForImage:image];
+  }
+  return [[cb_Class sharedInstance] colorForImage:image];
+}
+
+static BOOL proxy_isDarkColor(int color) {
+  proxy_init();
+
+  if (bucket_Class) {
+    return [bucket_Class isDarkColor:color];
+  }
+  return [cb_Class isDarkColor:color];
+}
 
 @implementation CBRColorCache
 
@@ -12,6 +44,10 @@
   static CBRColorCache *cache;
   dispatch_once(&onceToken, ^{ cache = [[CBRColorCache alloc] init]; } );
   return cache;
+}
+
++ (BOOL)isDarkColor:(int)color {
+  return proxy_isDarkColor(color);
 }
 
 - (instancetype)init {
@@ -26,7 +62,7 @@
 - (int)colorForIdentifier:(NSString *)identifier image:(UIImage *)image {
   if (!identifier) {
     CBRLOG(@"No identifier given for image %@", image);
-    return [[%c(ColorBadges) sharedInstance] colorForImage:image];
+    return proxy_colorForImage(image);
   }
 
   NSNumber *colorNum = [_cache objectForKey:identifier];
@@ -37,7 +73,7 @@
   } else {
     CBRLOG(@"Cache miss for identifier %@", identifier);
 
-    int color = [[%c(ColorBadges) sharedInstance] colorForImage:image];
+    int color = proxy_colorForImage(image);
     [_cache setObject:@(color) forKey:identifier];
     return color;
   }

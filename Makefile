@@ -3,7 +3,7 @@ export TARGET = iphone:8.1:8.1
 include theos/makefiles/common.mk
 
 TWEAK_NAME = ColorBanners
-ColorBanners_FILES = Tweak.xm CBRGradientView.m UIColor+ColorBanners.m CBRPrefsManager.m CBRAppList.m CBRColorCache.xm
+ColorBanners_FILES = Tweak.xm CBRGradientView.m UIColor+ColorBanners.m CBRPrefsManager.m CBRAppList.m CBRColorCache.m private/*.m
 ColorBanners_FRAMEWORKS = UIKit CoreGraphics QuartzCore
 
 include $(THEOS_MAKE_PATH)/tweak.mk

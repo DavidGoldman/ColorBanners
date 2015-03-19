@@ -1,6 +1,6 @@
 #import "CBRAppList.h"
 
-#include <objc/runtime.h>
+#import <objc/runtime.h>
 
 @interface SBApplicationController : NSObject
 + (id)sharedInstance;

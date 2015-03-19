@@ -12,7 +12,7 @@
 #define VIEW_TAG 0xDAE1DEE
 
 static BOOL isWhitish(int rgb) {
-  return ![%c(ColorBadges) isDarkColor:rgb];
+  return ![CBRColorCache isDarkColor:rgb];
 }
 
 static NSAttributedString * copyAttributedStringWithColor(NSAttributedString *str, UIColor *color) {
