@@ -25,9 +25,6 @@
 @property(nonatomic, assign, getter=shouldRemoveBannersBlur) BOOL removeBannersBlur;
 @property(nonatomic, assign, getter=shouldHideQRRect) BOOL hideQRRect;
 @property(nonatomic, assign, getter=shouldHideGrabber) BOOL hideGrabber;
-// Adaptive vs. fixed color.
-// Gradient vs non-gradient.
-// Alpha levels.
 
 + (instancetype)sharedInstance;
 
