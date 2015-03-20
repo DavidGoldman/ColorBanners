@@ -103,6 +103,9 @@ static void showTestBanner(CFNotificationCenterRef center, void *observer, CFStr
 %group LockScreen
 %hook SBLockScreenNotificationListView
 
+// TODO(DavidGoldman): Try to improve this somehow. Not exactly sure which coloring part causes
+// slowdowns (probably the gradient though). Should also remove cbr_identifier as it seems redudant
+// as we already have a identifier:color cache. 
 - (void)_setContentForTableCell:(SBLockScreenBulletinCell *)cell
                        withItem:(SBAwayBulletinListItem *)item
                     atIndexPath:(id)path {
