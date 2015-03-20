@@ -115,12 +115,23 @@ static void showTestBanner(CFNotificationCenterRef center, void *observer, CFStr
 
     if (prefsManager.lsUseConstantColor) {
       color = prefsManager.lsBackgroundColor;
+      [cell cbr_setIdentifier:nil];
     } else {
-      UIImage *image = [item iconImage];
-      if (!image) {
+      NSString *identifier = item.activeBulletin.sectionID;
+      NSString *currentIdentifier = [cell cbr_identifier];
+      if ([identifier isEqualToString:currentIdentifier]) {
+        CBRLOG(@"%@: Ignoring repeated colorize for %@", cell, identifier);
+        [cell refreshAlphaAndVibrancy];
         return;
       }
-      NSString *identifier = item.activeBulletin.sectionID;
+
+      [cell cbr_setIdentifier:identifier];
+
+      UIImage *image = [item iconImage];
+      if (!image) {
+        [cell revertIfNeeded];
+        return;
+      }
       color = [[CBRColorCache sharedInstance] colorForIdentifier:identifier image:image];
     }
 
@@ -134,7 +145,7 @@ static void showTestBanner(CFNotificationCenterRef center, void *observer, CFStr
 
   UITableView *tableView = MSHookIvar<UITableView *>(self, "_tableView");
   UITableViewCellSeparatorStyle style = ([CBRPrefsManager sharedInstance].showSeparators) ?
-    UITableViewCellSeparatorStyleSingleLine : UITableViewCellSeparatorStyleNone;
+      UITableViewCellSeparatorStyleSingleLine : UITableViewCellSeparatorStyleNone;
   tableView.separatorStyle = style;
 }
 
@@ -145,12 +156,25 @@ static void showTestBanner(CFNotificationCenterRef center, void *observer, CFStr
 - (void)prepareForReuse {
   %orig;
 
-  // Hide/revert all the things!
+  if (![CBRPrefsManager sharedInstance].lsEnabled) {
+    [self revertIfNeeded];
+  }
+}
+
+- (void)revertIfNeeded {
+  if (![self cbr_color]) {
+    return;
+  }
+
+  // // Hide/revert all the things!
+  [self cbr_setColor:nil];
+  [self cbr_setIdentifier:nil];
+
+  // Hide gradient.
   CBRGradientView *gradientView = (CBRGradientView *)[self.realContentView viewWithTag:VIEW_TAG];
   gradientView.hidden = YES;
 
-  [self cbr_setColor:nil];
-
+  // Revert text colors.
   NSString *compositingFilter = @"colorDodgeBlendMode";
   self.eventDateLabel.layer.compositingFilter = compositingFilter;
   self.relevanceDateLabel.layer.compositingFilter = compositingFilter;
@@ -164,6 +188,21 @@ static void showTestBanner(CFNotificationCenterRef center, void *observer, CFStr
   UIColor *vibrantColor = [self _vibrantTextColor];
   self.relevanceDateColor = vibrantColor;
   self.eventDateColor = vibrantColor;
+}
+
+%new
+- (void)refreshAlphaAndVibrancy {
+  int color = [[self cbr_color] intValue];
+
+  CBRGradientView *gradientView = (CBRGradientView *)[self.realContentView viewWithTag:VIEW_TAG];
+  gradientView.alpha = [CBRPrefsManager sharedInstance].lsAlpha;
+
+  BOOL wantsBlack = isWhitish(color);
+  NSString *compositingFilter = (wantsBlack) ? nil : @"colorDodgeBlendMode";
+
+  self.eventDateLabel.layer.compositingFilter = compositingFilter;
+  self.relevanceDateLabel.layer.compositingFilter = compositingFilter;
+  MSHookIvar<UILabel *>(self, "_unlockTextLabel").layer.compositingFilter = compositingFilter;
 }
 
 %new
@@ -191,17 +230,29 @@ static void showTestBanner(CFNotificationCenterRef center, void *observer, CFStr
 
 %new
 - (void)colorizeText:(int)color {
-  if (isWhitish(color)) {
-    self.eventDateLabel.layer.compositingFilter = nil;
-    self.relevanceDateLabel.layer.compositingFilter = nil;
-    MSHookIvar<UILabel *>(self, "_unlockTextLabel").layer.compositingFilter = nil;
+  BOOL wantsBlack = isWhitish(color);
+  NSString *compositingFilter = (wantsBlack) ? nil : @"colorDodgeBlendMode";
 
+  self.eventDateLabel.layer.compositingFilter = compositingFilter;
+  self.relevanceDateLabel.layer.compositingFilter = compositingFilter;
+  MSHookIvar<UILabel *>(self, "_unlockTextLabel").layer.compositingFilter = compositingFilter;
+
+  if (wantsBlack) {
     UIColor *textColor = [UIColor darkGrayColor];
     self.primaryTextColor = textColor;
     self.subtitleTextColor = textColor;
     self.secondaryTextColor = textColor;
     self.relevanceDateColor = textColor;
     self.eventDateColor = textColor;
+  } else {
+    Class BulletinCell = %c(SBLockScreenBulletinCell);
+    self.primaryTextColor = [BulletinCell defaultColorForPrimaryText];
+    self.subtitleTextColor = [BulletinCell defaultColorForSubtitleText];
+    self.secondaryTextColor = [BulletinCell defaultColorForSecondaryText];
+
+    UIColor *vibrantColor = [self _vibrantTextColor];
+    self.relevanceDateColor = vibrantColor;
+    self.eventDateColor = vibrantColor;
   }
 }
 
@@ -214,7 +265,16 @@ static void showTestBanner(CFNotificationCenterRef center, void *observer, CFStr
 
 %new
 - (void)colorize:(int)color {
-  [self cbr_setColor:@(color)];
+  NSNumber *colorObj = @(color);
+  if ([colorObj isEqual:[self cbr_color]]) {
+    CBRLOG(@"%@: Ignoring repeated colorize %d", self, color);
+    [self refreshAlphaAndVibrancy];
+    return;
+  } else {
+    CBRLOG(@"%@: Colorize to %d from %@", self, color, [self cbr_color]);
+  }
+
+  [self cbr_setColor:colorObj];
   [self colorizeBackground:color];
   [self colorizeText:color];
 }
@@ -227,6 +287,19 @@ static void showTestBanner(CFNotificationCenterRef center, void *observer, CFStr
 %new
 - (void)cbr_setColor:(NSNumber *)color {
   objc_setAssociatedObject(self, @selector(cbr_color), color, OBJC_ASSOCIATION_RETAIN_NONATOMIC);
+}
+
+%new
+- (NSString *)cbr_identifier {
+  return objc_getAssociatedObject(self, @selector(cbr_identifier));
+}
+
+%new
+- (void)cbr_setIdentifier:(NSString *)identifier {
+  objc_setAssociatedObject(self,
+                           @selector(cbr_identifier),
+                           identifier,
+                           OBJC_ASSOCIATION_RETAIN_NONATOMIC);
 }
 
 - (void)_beginSwiping {

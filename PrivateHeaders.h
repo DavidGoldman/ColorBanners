@@ -82,12 +82,16 @@
 - (UITableViewCellDeleteConfirmationView *)_swipeToDeleteConfirmationView;
 @end
 @interface SBLockScreenBulletinCell(ColorBanners)
+- (void)revertIfNeeded;
+- (void)refreshAlphaAndVibrancy;
 - (void)colorize:(int)color;
 - (void)colorizeBackground:(int)color;
 - (void)colorizeText:(int)color;
 
 - (NSNumber *)cbr_color;
 - (void)cbr_setColor:(NSNumber *)color;
+- (NSString *)cbr_identifier;
+- (void)cbr_setIdentifier:(NSString *)identifier;
 @end
 
 // Banners.
