@@ -104,8 +104,7 @@ static void showTestBanner(CFNotificationCenterRef center, void *observer, CFStr
 %hook SBLockScreenNotificationListView
 
 // TODO(DavidGoldman): Try to improve this somehow. Not exactly sure which coloring part causes
-// slowdowns (probably the gradient though). Should also remove cbr_identifier as it seems redudant
-// as we already have a identifier:color cache. 
+// slowdowns (probably the gradient though).
 - (void)_setContentForTableCell:(SBLockScreenBulletinCell *)cell
                        withItem:(SBAwayBulletinListItem *)item
                     atIndexPath:(id)path {
@@ -118,23 +117,14 @@ static void showTestBanner(CFNotificationCenterRef center, void *observer, CFStr
 
     if (prefsManager.lsUseConstantColor) {
       color = prefsManager.lsBackgroundColor;
-      [cell cbr_setIdentifier:nil];
     } else {
-      NSString *identifier = item.activeBulletin.sectionID;
-      NSString *currentIdentifier = [cell cbr_identifier];
-      if ([identifier isEqualToString:currentIdentifier]) {
-        CBRLOG(@"%@: Ignoring repeated colorize for %@", cell, identifier);
-        [cell refreshAlphaAndVibrancy];
-        return;
-      }
-
-      [cell cbr_setIdentifier:identifier];
-
       UIImage *image = [item iconImage];
       if (!image) {
         [cell revertIfNeeded];
         return;
       }
+
+      NSString *identifier = item.activeBulletin.sectionID;
       color = [[CBRColorCache sharedInstance] colorForIdentifier:identifier image:image];
     }
 
@@ -171,7 +161,6 @@ static void showTestBanner(CFNotificationCenterRef center, void *observer, CFStr
 
   // // Hide/revert all the things!
   [self cbr_setColor:nil];
-  [self cbr_setIdentifier:nil];
 
   // Hide gradient.
   CBRGradientView *gradientView = (CBRGradientView *)[self.realContentView viewWithTag:VIEW_TAG];
@@ -290,19 +279,6 @@ static void showTestBanner(CFNotificationCenterRef center, void *observer, CFStr
 %new
 - (void)cbr_setColor:(NSNumber *)color {
   objc_setAssociatedObject(self, @selector(cbr_color), color, OBJC_ASSOCIATION_RETAIN_NONATOMIC);
-}
-
-%new
-- (NSString *)cbr_identifier {
-  return objc_getAssociatedObject(self, @selector(cbr_identifier));
-}
-
-%new
-- (void)cbr_setIdentifier:(NSString *)identifier {
-  objc_setAssociatedObject(self,
-                           @selector(cbr_identifier),
-                           identifier,
-                           OBJC_ASSOCIATION_RETAIN_NONATOMIC);
 }
 
 - (void)_beginSwiping {
