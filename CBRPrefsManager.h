@@ -20,6 +20,8 @@
 
 @property(nonatomic, assign, getter=shouldRemoveLSBlur) BOOL removeLSBlur;
 
+@property(nonatomic, assign) BOOL wantsDeepBannerAnalyzing;
+
 @property(nonatomic, assign, getter=shouldRemoveBannersBlur) BOOL removeBannersBlur;
 @property(nonatomic, assign, getter=shouldHideQRRect) BOOL hideQRRect;
 @property(nonatomic, assign, getter=shouldHideGrabber) BOOL hideGrabber;

@@ -259,7 +259,8 @@ static void showTestBanner(CFNotificationCenterRef center, void *observer, CFStr
   [self cbr_setColor:@(color)];
 
   // TODO(DavidGoldman): Could probably increase this threshold.
-  if ([CBRPrefsManager sharedInstance].bannerAlpha == 1) {
+  CBRPrefsManager *manager = [CBRPrefsManager sharedInstance];
+  if (manager.bannerAlpha == 1 || !manager.wantsDeepBannerAnalyzing) {
     [self colorize:color withBackground:-1];
     return;
   }

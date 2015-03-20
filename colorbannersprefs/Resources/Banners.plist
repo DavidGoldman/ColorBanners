@@ -67,6 +67,20 @@
 
     {
       cell = PSGroupCell;
+      label = "AlGoreithmic Options";
+      footerText = "Analyzes the view located below the banner when deciding the text color. Use this if you have a fairly low alpha level.";
+    },
+    {
+      cell = PSSwitchCell;
+      label = "Analyze Below Banner";
+      key = "WantsDeepBannerAnalyzing";
+      default = 1;
+      defaults = "com.golddavid.colorbanners";
+      PostNotification = "com.golddavid.colorbanners/reloadprefs";
+    },
+
+    {
+      cell = PSGroupCell;
       footerText = "Hides the QuickReply rounded-rectangular text field.";
     },
     {

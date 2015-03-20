@@ -11,6 +11,7 @@
 #define BANNER_BG_KEY @"BannerBackgroundColor"
 #define BANNER_CONSTANT_KEY @"BannerUseConstant"
 
+#define BANNER_DEEP_ANALYSIS_KEY @"WantsDeepBannerAnalyzing"
 #define BANNERS_BLUR_KEY @"RemoveBannersBlur"
 #define RECT_KEY @"HideQRRect"
 #define GRABBER_KEY @"HideGrabber"
@@ -82,6 +83,7 @@ static int RGBColorFromNSString(NSString *str) {
   _bannerBackgroundColor = [self rgbColorForNSString:prefs[BANNER_BG_KEY] withDefault:DEFAULT_COLOR];
   _bannersUseConstantColor = [self boolForValue:prefs[BANNER_CONSTANT_KEY] withDefault:NO];
 
+  _wantsDeepBannerAnalyzing = [self boolForValue:prefs[BANNER_DEEP_ANALYSIS_KEY] withDefault:YES];
   _removeBannersBlur = [self boolForValue:prefs[BANNERS_BLUR_KEY] withDefault:NO];
   _hideQRRect = [self boolForValue:prefs[RECT_KEY] withDefault:NO];
   _hideGrabber = [self boolForValue:prefs[GRABBER_KEY] withDefault:NO];
