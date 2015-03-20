@@ -15,6 +15,28 @@ static BOOL isWhitish(int rgb) {
   return ![CBRColorCache isDarkColor:rgb];
 }
 
+static int colorToRGBInt(int r, int g, int b) {
+  return ((r << 16) | 
+          (g << 8) |
+          (b));
+}
+
+static BOOL compositeIsWhitish(int rgb, int bg, CGFloat fgAlpha) {
+  int r = GETRED(rgb);
+  int g = GETGREEN(rgb);
+  int b = GETBLUE(rgb);
+
+  int x = GETRED(bg);
+  int y = GETGREEN(bg);
+  int z = GETBLUE(bg);
+
+  CGFloat bgAlpha = 1 - fgAlpha;
+  int outRed = (int)(fgAlpha * r) + (int)(bgAlpha * x);
+  int outGreen = (int)(fgAlpha * g) + (int)(bgAlpha * y);
+  int outBlue = (int)(fgAlpha * b) + (int)(bgAlpha * z);
+  return isWhitish(colorToRGBInt(outRed, outGreen, outBlue));
+}
+
 static NSAttributedString * copyAttributedStringWithColor(NSAttributedString *str, UIColor *color) {
   NSMutableAttributedString *copy = [str mutableCopy];
   [copy addAttribute:NSForegroundColorAttributeName value:color range:NSMakeRange(0, [copy length])];
@@ -233,12 +255,32 @@ static void showTestBanner(CFNotificationCenterRef center, void *observer, CFStr
 %hook SBBannerContextView
 
 %new
-- (void)colorizeBackground:(int)color {
+- (void)colorizeOrDefer:(int)color {
+  [self cbr_setColor:@(color)];
+
+  // TODO(DavidGoldman): Could probably increase this threshold.
+  if ([CBRPrefsManager sharedInstance].bannerAlpha == 1) {
+    [self colorize:color withBackground:-1];
+    return;
+  }
+
+  _UIBackdropView *backdropView = MSHookIvar<_UIBackdropView *>(self, "_backdropView");
+  _UIBackdropViewSettings *s = [%c(_UIBackdropViewSettings) settingsForStyle:11070];
+  s.statisticsInterval = 0.25;
+  s.requiresColorStatistics = YES;
+
+  [backdropView setIsForBannerContextView:YES];
+  [backdropView transitionToSettings:s];
+  [backdropView setComputesColorSettings:YES];
+}
+
+%new
+- (void)colorizeBackgroundForColor:(int)color alpha:(CGFloat)alpha preferringBlack:(BOOL)wantsBlack {
   // Remove background tint.
   _UIBackdropView *backdropView = MSHookIvar<_UIBackdropView *>(self, "_backdropView");
+  [backdropView setIsForBannerContextView:YES];
   backdropView.colorSaturateFilter = nil;
   backdropView.tintFilter = nil;
-  [backdropView setIsForBannerContextView:YES];
   [backdropView _updateFilters];
 
   // Hide background blur if needed.
@@ -251,16 +293,16 @@ static void showTestBanner(CFNotificationCenterRef center, void *observer, CFStr
   UIColor *color1 = UIColorFromRGB(color);
 
   if (!gradientView) {
-    gradientView = [[CBRGradientView alloc] initWithFrame:self.frame];
+    gradientView = [[CBRGradientView alloc] initWithFrame:self.bounds];
     gradientView.tag = VIEW_TAG;
     [self insertSubview:gradientView atIndex:1];
     [gradientView release];
   }
   gradientView.hidden = NO;
-  gradientView.alpha = [CBRPrefsManager sharedInstance].bannerAlpha;
+  gradientView.alpha = alpha;
 
   if ([CBRPrefsManager sharedInstance].useBannerGradient) {
-    UIColor *color2 = (isWhitish(color)) ? [color1 cbr_darken:0.1] : [color1 cbr_lighten:0.1];
+    UIColor *color2 = (wantsBlack) ? [color1 cbr_darken:0.1] : [color1 cbr_lighten:0.1];
     NSArray *colors = @[ (id)color1.CGColor, (id)color2.CGColor ];
     [gradientView setColors:colors];
   } else {
@@ -269,19 +311,82 @@ static void showTestBanner(CFNotificationCenterRef center, void *observer, CFStr
 }
 
 %new
-- (void)colorizeText:(int)color {
+- (void)colorizeTextForColor:(int)color alpha:(CGFloat)alpha preferringBlack:(BOOL)wantsBlack {
   SBDefaultBannerView *view = MSHookIvar<SBDefaultBannerView *>(self, "_contentView");
   SBDefaultBannerTextView *textView = MSHookIvar<SBDefaultBannerTextView *>(view, "_textView");
-  BOOL isWhite = isWhitish(color);
-  UIColor *dateColor = (isWhite) ? [UIColor darkGrayColor] : UIColorFromRGB(color);
-  if (isWhite) {
-    textView.relevanceDateLabel.layer.compositingFilter = nil;
-  }
-  [view _setRelevanceDateColor:dateColor];
 
-  UIColor *textColor = (isWhite) ? [UIColor darkGrayColor] : [UIColor whiteColor];
+  UIColor *dateColor;
+  UIColor *textColor;
+  NSString *compositingFilter;
+
+  if (wantsBlack) {
+    dateColor = textColor = [UIColor darkGrayColor];
+    compositingFilter = nil;
+  } else {
+    dateColor = UIColorFromRGB(color);
+    textColor = [UIColor whiteColor];
+    compositingFilter = @"colorDodgeBlendMode";
+  }
+
+  textView.relevanceDateLabel.layer.compositingFilter = compositingFilter;
+  [view _setRelevanceDateColor:dateColor];
   [textView setPrimaryTextColor:textColor];
   [textView setSecondaryTextColor:textColor];
+
+  [textView setNeedsDisplay];
+}
+
+%new
+- (void)colorizeGrabberForColor:(int)color alpha:(CGFloat)alpha preferringBlack:(BOOL)wantsBlack {
+  // Colorize/hide the grabber.
+  UIView *grabberView = MSHookIvar<UIView *>(self, "_grabberView");
+  if ([CBRPrefsManager sharedInstance].hideGrabber) {
+    grabberView.hidden = YES;
+  } else {
+    BOOL normallyWantsBlack = isWhitish(color);
+    grabberView.layer.compositingFilter = nil;
+    grabberView.opaque = NO;
+
+    UIColor *grabberColor;
+    if (normallyWantsBlack && !wantsBlack) { // Go with fully white because it's blurred darker.
+      grabberColor = [UIColor whiteColor];
+    } else {
+      grabberColor = (wantsBlack) ? [UIColor darkGrayColor] : [UIColorFromRGBWithAlpha(color, 0.6) cbr_darken:0.3];
+    }
+    [self _setGrabberColor:grabberColor];
+  }
+}
+
+%new
+- (void)colorizePullDownForColor:(int)color alpha:(CGFloat)alpha preferringBlack:(BOOL)wantsBlack {
+  // Colorize the buttons.
+  id pullDownView = self.pullDownView;
+  if ([pullDownView isKindOfClass:%c(SBBannerButtonView)]) {
+    SBBannerButtonView *buttonView = (SBBannerButtonView *)pullDownView;
+    [buttonView colorizeWithColor:color alpha:alpha preferringBlack:wantsBlack];
+  }
+}
+
+%new
+- (void)colorize:(int)color withBackground:(int)bg {
+  CGFloat alpha = [CBRPrefsManager sharedInstance].bannerAlpha;
+
+  BOOL isWhite = (bg != -1) ? compositeIsWhitish(color, bg, alpha) : isWhitish(color);
+
+  [self colorizeBackgroundForColor:color alpha:alpha preferringBlack:isWhite];
+  [self colorizeTextForColor:color alpha:alpha preferringBlack:isWhite];
+  [self colorizeGrabberForColor:color alpha:alpha preferringBlack:isWhite];
+  [self colorizePullDownForColor:color alpha:alpha preferringBlack:isWhite];
+}
+
+%new
+- (NSNumber *)cbr_color {
+  return objc_getAssociatedObject(self, @selector(cbr_color));
+}
+
+%new
+- (void)cbr_setColor:(NSNumber *)color {
+  objc_setAssociatedObject(self, @selector(cbr_color), color, OBJC_ASSOCIATION_RETAIN_NONATOMIC);
 }
 
 - (void)setBannerContext:(SBUIBannerContext *)context withReplaceReason:(int)replaceReason {
@@ -305,25 +410,7 @@ static void showTestBanner(CFNotificationCenterRef center, void *observer, CFStr
         color = [[CBRColorCache sharedInstance] colorForIdentifier:identifier image:image];
       }
 
-      [self colorizeBackground:color];
-      [self colorizeText:color];
-
-      // Colorize/hide the grabber.
-      UIView *grabberView = MSHookIvar<UIView *>(self, "_grabberView");
-      if ([CBRPrefsManager sharedInstance].hideGrabber) {
-        grabberView.hidden = YES;
-      } else {
-        grabberView.layer.compositingFilter = nil;
-        grabberView.opaque = NO;
-        UIColor *c = (isWhitish(color)) ? [UIColor darkGrayColor] : [UIColorFromRGBWithAlpha(color, 0.6) cbr_darken:0.3];
-        [self _setGrabberColor:c];
-      }
-
-      // Colorize the buttons.
-      id pullDownView = self.pullDownView;
-      if ([pullDownView isKindOfClass:%c(SBBannerButtonView)]) {
-        [(SBBannerButtonView *)pullDownView colorize:color];
-      }
+      [self colorizeOrDefer:color];
     }
   }
 }
@@ -348,6 +435,11 @@ static void showTestBanner(CFNotificationCenterRef center, void *observer, CFStr
   s = MSHookIvar<NSAttributedString *>(self, "_primaryTextAttributedStringComponent");
   MSHookIvar<NSAttributedString *>(self, "_primaryTextAttributedStringComponent") = copyAttributedStringWithColor(s, color);
   [s release];
+
+  // TinyBar support (deferred colorizing).
+  if ([self respondsToSelector:@selector(tb_titleLabel)]) {
+    [self tb_titleLabel].textColor = color;
+  }
 }
 
 %new
@@ -359,6 +451,11 @@ static void showTestBanner(CFNotificationCenterRef center, void *observer, CFStr
   s = MSHookIvar<NSAttributedString *>(self, "_alternateSecondaryTextAttributedString");
   MSHookIvar<NSAttributedString *>(self, "_alternateSecondaryTextAttributedString") = copyAttributedStringWithColor(s, color);
   [s release];
+
+  // TinyBar support (deferred colorizing).
+  if ([self respondsToSelector:@selector(tb_secondaryLabel)]) {
+    [self tb_secondaryLabel].textColor = color;
+  }
 
   // TinyBar support.
   objc_setAssociatedObject(self, @selector(secondaryTextColor), color, OBJC_ASSOCIATION_RETAIN_NONATOMIC);
@@ -388,10 +485,11 @@ static void showTestBanner(CFNotificationCenterRef center, void *observer, CFStr
 %hook SBBannerButtonView
 
 %new
-- (void)colorize:(int)color {
+- (void)colorizeWithColor:(int)color alpha:(CGFloat)alpha preferringBlack:(BOOL)wantsBlack {
   for (UIButton *button in self.buttons) {
     if ([button isKindOfClass:%c(SBNotificationVibrantButton)]) {
-      [(SBNotificationVibrantButton *)button colorize:color];
+      SBNotificationVibrantButton *vibrantButton = (SBNotificationVibrantButton *)button;
+      [vibrantButton colorizeWithColor:color alpha:alpha preferringBlack:wantsBlack];
     }
   }
 }
@@ -417,11 +515,11 @@ static void showTestBanner(CFNotificationCenterRef center, void *observer, CFStr
 }
 
 %new
-- (void)colorize:(int)colorInt {
-  CGFloat alpha = ([CBRPrefsManager sharedInstance].bannerAlpha / 2) + 0.2;
+- (void)colorizeWithColor:(int)colorInt alpha:(CGFloat)alpha preferringBlack:(BOOL)wantsBlack {
+  alpha = (alpha / 2) + 0.2;
   UIColor *color = UIColorFromRGBWithAlpha(colorInt, alpha);
   UIColor *darkerColor = [color cbr_darken:0.2];
-  UIColor *textColor = (isWhitish(colorInt) ? [UIColor darkGrayColor] : [UIColor whiteColor]);
+  UIColor *textColor = (wantsBlack) ? [UIColor darkGrayColor] : [UIColor whiteColor];
 
   UIButton *overlayButton = MSHookIvar<UIButton *>(self, "_overlayButton");
   [self configureButton:overlayButton
@@ -450,6 +548,32 @@ static void showTestBanner(CFNotificationCenterRef center, void *observer, CFStr
 - (BOOL)isForBannerContextView {
   NSNumber *value = objc_getAssociatedObject(self, @selector(isForBannerContextView));
   return [value boolValue];
+}
+
+- (void)backdropLayerStatisticsDidChange:(CABackdropLayer *)layer {
+  %orig;
+
+  if ([self isForBannerContextView]) {
+    NSDictionary *dict = [layer statisticsValues];
+    if (!dict) {
+      return;
+    }
+
+    int r = (int)([dict[@"redAverage"] floatValue] * 255);
+    int g = (int)([dict[@"greenAverage"] floatValue] * 255);
+    int b = (int)([dict[@"blueAverage"] floatValue] * 255);
+
+    UIView *superview = self.superview;
+    if ([superview isMemberOfClass:%c(SBBannerContextView)]) {
+      SBBannerContextView *bannerView = (SBBannerContextView *)superview;
+      _UIBackdropView *backdropView = MSHookIvar<_UIBackdropView *>(bannerView, "_backdropView");
+
+      int color = [[bannerView cbr_color] intValue];
+      int bgColor = colorToRGBInt(r, g, b);
+      [bannerView colorize:color withBackground:bgColor];
+      [backdropView setComputesColorSettings:NO];
+    }
+  }
 }
 
 - (void)setTintFilterForSettings:(id)settings {

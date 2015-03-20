@@ -105,6 +105,10 @@
 @interface SBDefaultBannerTextView : UIView
 @property(readonly, assign, nonatomic) UILabel *relevanceDateLabel;
 @end
+@interface SBDefaultBannerTextView(TinyBar)
+- (UILabel *)tb_titleLabel;
+- (UILabel *)tb_secondaryLabel;
+@end
 @interface SBDefaultBannerTextView(ColorBanners)
 - (void)setPrimaryTextColor:(UIColor *)color;
 - (void)setSecondaryTextColor:(UIColor *)color;
@@ -120,8 +124,15 @@
 - (void)_setGrabberColor:(id)color;
 @end
 @interface SBBannerContextView(ColorBanners)
-- (void)colorizeBackground:(int)color;
-- (void)colorizeText:(int)color;
+- (void)colorizeBackgroundForColor:(int)color alpha:(CGFloat)alpha preferringBlack:(BOOL)wantsBlack;
+- (void)colorizeTextForColor:(int)color alpha:(CGFloat)alpha preferringBlack:(BOOL)wantsBlack;
+- (void)colorizeGrabberForColor:(int)color alpha:(CGFloat)alpha preferringBlack:(BOOL)wantsBlack;
+- (void)colorizePullDownForColor:(int)color alpha:(CGFloat)alpha preferringBlack:(BOOL)wantsBlack;
+- (void)colorize:(int)color withBackground:(int)bg;
+- (void)colorizeOrDefer:(int)color;
+
+- (NSNumber *)cbr_color;
+- (void)cbr_setColor:(NSNumber *)color;
 @end
 
 #pragma mark - Banner Buttons
@@ -130,14 +141,14 @@
 @property(retain, nonatomic) NSArray *buttons;
 @end
 @interface SBBannerButtonView(ColorBanners)
-- (void)colorize:(int)color;
+- (void)colorizeWithColor:(int)color alpha:(CGFloat)alpha preferringBlack:(BOOL)wantsBlack;
 @end
 
 @interface SBNotificationVibrantButton : UIView
 - (id)_buttonImageForColor:(id)color selected:(BOOL)selected;
 @end
 @interface SBNotificationVibrantButton(ColorBanners)
-- (void)colorize:(int)color;
+- (void)colorizeWithColor:(int)color alpha:(CGFloat)alpha preferringBlack:(BOOL)wantsBlack;
 - (void)configureButton:(UIButton *)button
           withTintColor:(UIColor *)tintColor
       selectedTintColor:(UIColor *)selectedTintColor
@@ -148,21 +159,36 @@
 #pragma mark - Backdrop
 
 @interface _UIBackdropViewSettings : NSObject
+@property double statisticsInterval;
+@property BOOL requiresColorStatistics;
+
 @property(retain) UIColor * colorTint;
 @property(retain) UIColor * combinedTintColor;
+
++ (id)settingsForStyle:(int)style;
+@end
+
+@interface _UIBackdropEffectView : UIView
 @end
 
 @interface _UIBackdropView : UIView
 @property(retain) id colorSaturateFilter;
 @property(retain) id tintFilter;
 - (void)_updateFilters;
+- (void)transitionToSettings:(id)arg1;
+- (void)setComputesColorSettings:(BOOL)computes;
 
 @property(retain) UIColor * colorMatrixColorTint;
 @property(retain) _UIBackdropViewSettings * outputSettings;
+@property(retain) _UIBackdropEffectView * backdropEffectView;
 @end
 @interface _UIBackdropView(ColorBanners)
 - (void)setIsForBannerContextView:(BOOL)flag;
 - (BOOL)isForBannerContextView;
+@end
+
+@interface CABackdropLayer : CALayer
+- (id)statisticsValues;
 @end
 
 #pragma mark - QuickReply
