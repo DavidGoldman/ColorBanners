@@ -128,6 +128,16 @@ static void showTestBanner(CFNotificationCenterRef center, void *observer, CFStr
   }
 }
 
+// Hiding separators thanks to PriorityHub.
+- (void)layoutSubviews {
+  %orig;
+
+  UITableView *tableView = MSHookIvar<UITableView *>(self, "_tableView");
+  UITableViewCellSeparatorStyle style = ([CBRPrefsManager sharedInstance].showSeparators) ?
+    UITableViewCellSeparatorStyleSingleLine : UITableViewCellSeparatorStyleNone;
+  tableView.separatorStyle = style;
+}
+
 %end
 
 %hook SBLockScreenBulletinCell

@@ -71,6 +71,14 @@
     },
     {
       cell = PSSwitchCell;
+      label = "Show separators";
+      key = "ShowSeparators";
+      default = 0;
+      defaults = "com.golddavid.colorbanners";
+      PostNotification = "com.golddavid.colorbanners/reloadprefs";
+    },
+    {
+      cell = PSSwitchCell;
       label = "Remove Blur";
       key = "RemoveBlur";
       default = 0;

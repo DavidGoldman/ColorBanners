@@ -23,6 +23,7 @@
 #define LS_CONSTANT_KEY @"LSUseConstant"
 
 #define BLUR_KEY @"RemoveBlur"
+#define SEPARATORS_KEY @"ShowSeparators"
 
 // From ColorBadges.h.
 #define GETRED(rgb) ((rgb >> 16) & 0xFF)
@@ -95,6 +96,7 @@ static int RGBColorFromNSString(NSString *str) {
   _lsUseConstantColor = [self boolForValue:prefs[LS_CONSTANT_KEY] withDefault:NO];
 
   _removeLSBlur = [self boolForValue:prefs[BLUR_KEY] withDefault:NO];
+  _showSeparators = [self boolForValue:prefs[SEPARATORS_KEY] withDefault:NO];
 }
 
 - (BOOL)boolForValue:(NSNumber *)value withDefault:(BOOL)defaultValue {
