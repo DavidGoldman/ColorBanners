@@ -238,7 +238,8 @@ static void showTestBanner(CFNotificationCenterRef center, void *observer, CFStr
 
   self.eventDateLabel.layer.compositingFilter = compositingFilter;
   self.relevanceDateLabel.layer.compositingFilter = compositingFilter;
-  MSHookIvar<UILabel *>(self, "_unlockTextLabel").layer.compositingFilter = compositingFilter;
+  UILabel *unlockTextLabel = MSHookIvar<UILabel *>(self, "_unlockTextLabel");
+  unlockTextLabel.layer.compositingFilter = compositingFilter;
 
   if (wantsBlack) {
     UIColor *textColor = [UIColor darkGrayColor];
@@ -247,6 +248,7 @@ static void showTestBanner(CFNotificationCenterRef center, void *observer, CFStr
     self.secondaryTextColor = textColor;
     self.relevanceDateColor = textColor;
     self.eventDateColor = textColor;
+    unlockTextLabel.textColor = textColor;
   } else {
     Class BulletinCell = %c(SBLockScreenBulletinCell);
     self.primaryTextColor = [BulletinCell defaultColorForPrimaryText];
@@ -256,6 +258,7 @@ static void showTestBanner(CFNotificationCenterRef center, void *observer, CFStr
     UIColor *vibrantColor = [self _vibrantTextColor];
     self.relevanceDateColor = vibrantColor;
     self.eventDateColor = vibrantColor;
+    unlockTextLabel.textColor = vibrantColor;
   }
 }
 
