@@ -20,6 +20,7 @@
 
 @property(nonatomic, assign, getter=shouldRemoveLSBlur) BOOL removeLSBlur;
 @property(nonatomic, assign, getter=shouldShowSeparators) BOOL showSeparators;
+@property(nonatomic, assign, getter=shouldDisableDimming) BOOL disableDimming;
 
 @property(nonatomic, assign) BOOL wantsDeepBannerAnalyzing;
 

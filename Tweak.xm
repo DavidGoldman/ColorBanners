@@ -164,6 +164,15 @@ static void showTestBanner(CFNotificationCenterRef center, void *observer, CFStr
   return %orig;
 }
 
+// TODO(DavidGoldman): Possibly move this hook into the superclass (SBLockScreenNotificationCell).
+- (void)setContentAlpha:(CGFloat)alpha {
+  if ([CBRPrefsManager sharedInstance].disableDimming) {
+    alpha = 1;
+  }
+
+  %orig;
+}
+
 %new
 - (void)revertIfNeeded {
   if (![self cbr_color]) {

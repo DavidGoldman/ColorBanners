@@ -79,6 +79,14 @@
     },
     {
       cell = PSSwitchCell;
+      label = "Disable dimming";
+      key = "DisableDimming";
+      default = 1;
+      defaults = "com.golddavid.colorbanners";
+      PostNotification = "com.golddavid.colorbanners/reloadprefs";
+    },
+    {
+      cell = PSSwitchCell;
       label = "Remove Blur";
       key = "RemoveBlur";
       default = 0;
