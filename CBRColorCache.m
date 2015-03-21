@@ -9,6 +9,7 @@
 
 static id bucket_Class = nil;
 static id cb_Class = nil;
+static BOOL prettierBanners_isInstalled = NO;
 
 static void proxy_init() {
   static dispatch_once_t predicate;
@@ -16,6 +17,9 @@ static void proxy_init() {
   dispatch_once(&predicate, ^{
       bucket_Class = objc_getClass("CBRBucket");
       cb_Class = objc_getClass("ColorBadges");
+
+      NSString *path = @"/Library/MobileSubstrate/DynamicLibraries/PrettierBanners.dylib";
+      prettierBanners_isInstalled = [[NSFileManager defaultManager] fileExistsAtPath:path];
   });
 }
 
@@ -62,6 +66,10 @@ static BOOL proxy_isDarkColor(int color) {
 - (int)colorForIdentifier:(NSString *)identifier image:(UIImage *)image {
   if (!identifier) {
     CBRLOG(@"No identifier given for image %@", image);
+    return proxy_colorForImage(image);
+  }
+  if (prettierBanners_isInstalled && [identifier isEqualToString:@"com.apple.MobileSMS"]) {
+    CBRLOG(@"PrettierBanners is installed! Avoiding the cache.");
     return proxy_colorForImage(image);
   }
 
