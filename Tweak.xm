@@ -154,6 +154,7 @@ static void showTestBanner(CFNotificationCenterRef center, void *observer, CFStr
   }
 }
 
+%new
 - (void)revertIfNeeded {
   if (![self cbr_color]) {
     return;
