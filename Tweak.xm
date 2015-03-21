@@ -164,6 +164,16 @@ static void showTestBanner(CFNotificationCenterRef center, void *observer, CFStr
   return %orig;
 }
 
+// This method adds the compositingFilter and updates the text color via _vibrantTextColor.
+- (void)_updateUnlockText:(NSString *)text {
+  %orig;
+
+  NSNumber *colorObj = [self cbr_color];
+  if (colorObj && isWhitish([colorObj intValue])) {
+    MSHookIvar<UILabel *>(self, "_unlockTextLabel").layer.compositingFilter = nil;
+  }
+}
+
 // TODO(DavidGoldman): Possibly move this hook into the superclass (SBLockScreenNotificationCell).
 - (void)setContentAlpha:(CGFloat)alpha {
   if ([CBRPrefsManager sharedInstance].disableDimming) {
