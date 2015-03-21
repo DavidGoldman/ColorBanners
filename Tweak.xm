@@ -105,6 +105,8 @@ static void showTestBanner(CFNotificationCenterRef center, void *observer, CFStr
 
 // TODO(DavidGoldman): Try to improve this somehow. Not exactly sure which coloring part causes
 // slowdowns (probably the gradient though).
+// 
+// Move this into -|tableView:cellForRowAtIndexPath:| to provide proper PrettierBanners support.
 - (void)_setContentForTableCell:(SBLockScreenBulletinCell *)cell
                        withItem:(SBAwayBulletinListItem *)item
                     atIndexPath:(id)path {
@@ -152,6 +154,14 @@ static void showTestBanner(CFNotificationCenterRef center, void *observer, CFStr
   if (![CBRPrefsManager sharedInstance].lsEnabled) {
     [self revertIfNeeded];
   }
+}
+
+- (UIColor *)_vibrantTextColor {
+  NSNumber *colorObj = [self cbr_color];
+  if (colorObj && isWhitish([colorObj intValue])) {
+    return [UIColor darkGrayColor];
+  }
+  return %orig;
 }
 
 %new
