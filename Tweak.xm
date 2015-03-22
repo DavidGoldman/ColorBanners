@@ -360,6 +360,7 @@ static void showTestBanner(CFNotificationCenterRef center, void *observer, CFStr
     return;
   }
 
+  // TODO(DavidGoldman): Try using the same settings - just modify the properties?
   _UIBackdropView *backdropView = MSHookIvar<_UIBackdropView *>(self, "_backdropView");
   _UIBackdropViewSettings *s = [%c(_UIBackdropViewSettings) settingsForStyle:11070];
   s.statisticsInterval = 0.25;
@@ -705,6 +706,7 @@ static void showTestBanner(CFNotificationCenterRef center, void *observer, CFStr
 %end
 %end
 
+// TODO(DavidGoldman): Colorize the text properly.
 %group QuickReply
 %hook CKInlineReplyViewController
 
