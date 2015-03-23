@@ -3,7 +3,7 @@
     bundle = ColorBannersPrefs;
     cell = PSLinkCell;
     detail = ColorBannersPrefsListController;
-    icon = ColorBannersPrefs.png;
+    icon = CBRPrefsIcon.png;
     isController = 1;
     label = ColorBanners;
   };

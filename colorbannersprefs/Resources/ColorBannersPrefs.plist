@@ -44,7 +44,8 @@
     {
       cell = PSGroupCell;
       height = 20;
-      footerText = "© 2015 David Goldman";
+      footerText = "© 2015 David Goldman
+Icon by Hœnir";
     }
   );
 }
