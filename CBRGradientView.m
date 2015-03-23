@@ -6,7 +6,6 @@
   return [CAGradientLayer class];
 }
 
-// TODO(DavidGoldman): Add support for different gradient directions.
 - (instancetype)initWithFrame:(CGRect)frame {
   self = [super initWithFrame:frame];
   if (self) {
