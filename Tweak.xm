@@ -359,14 +359,13 @@ static void showTestBanner(CFNotificationCenterRef center, void *observer, CFStr
     return;
   }
 
-  // TODO(DavidGoldman): Try using the same settings - just modify the properties?
+  // Modify the settings to use color statistics/computing color.
   _UIBackdropView *backdropView = MSHookIvar<_UIBackdropView *>(self, "_backdropView");
-  _UIBackdropViewSettings *s = [%c(_UIBackdropViewSettings) settingsForStyle:11070];
+  _UIBackdropViewSettings *s = [backdropView inputSettings];
   s.statisticsInterval = 0.25;
   s.requiresColorStatistics = YES;
 
   [backdropView setIsForBannerContextView:YES];
-  [backdropView transitionToSettings:s];
   [backdropView setComputesColorSettings:YES];
 }
 

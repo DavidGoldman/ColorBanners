@@ -179,6 +179,7 @@
 - (void)_updateFilters;
 - (void)transitionToSettings:(id)arg1;
 - (void)setComputesColorSettings:(BOOL)computes;
+- (id)inputSettings;
 
 @property(retain) UIColor * colorMatrixColorTint;
 @property(retain) _UIBackdropViewSettings * outputSettings;
