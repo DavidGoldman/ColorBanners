@@ -720,32 +720,6 @@ static void showTestBanner(CFNotificationCenterRef center, void *observer, CFStr
 }
 
 %end
-
-// Eclipse fixes.
-// static BOOL shouldOverrideUIBezierPath = NO;
-
-// %hook _UITextFieldRoundedRectBackgroundViewNeue
-
-// - (void)updateView {
-//   shouldOverrideUIBezierPath = YES;
-//   %orig;
-//   shouldOverrideUIBezierPath = NO;
-// }
-
-// %end
-
-// %hook UIBezierPath
-
-// - (void)fill {
-//   if (shouldOverrideUIBezierPath) {
-//     [self fillWithBlendMode:kCGBlendModeNormal alpha:0.2];
-//     return;
-//   }
-
-//   %orig;
-// }
-
-// %end
 %end
 
 %ctor {
