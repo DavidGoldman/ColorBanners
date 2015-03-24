@@ -138,10 +138,17 @@ static void showTestBanner(CFNotificationCenterRef center, void *observer, CFStr
 - (void)layoutSubviews {
   %orig;
 
+  BOOL showSeparators = ([CBRPrefsManager sharedInstance].showSeparators);
+
   UITableView *tableView = MSHookIvar<UITableView *>(self, "_tableView");
-  UITableViewCellSeparatorStyle style = ([CBRPrefsManager sharedInstance].showSeparators) ?
-      UITableViewCellSeparatorStyleSingleLine : UITableViewCellSeparatorStyleNone;
+  UITableViewCellSeparatorStyle style = 
+      showSeparators ? UITableViewCellSeparatorStyleSingleLine : UITableViewCellSeparatorStyleNone;
   tableView.separatorStyle = style;
+
+  UIView *topSeparator = MSHookIvar<UIView *>(self, "_topPocketView");
+  UIView *bottomSeparator = MSHookIvar<UIView *>(self, "_bottomPocketView");
+  topSeparator.hidden = !showSeparators;
+  bottomSeparator.hidden = !showSeparators;
 }
 
 %end
