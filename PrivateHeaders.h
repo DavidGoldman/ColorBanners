@@ -56,6 +56,8 @@
 @end
 
 @interface SBTableViewCellDismissActionButton : UIView
+@property(assign, nonatomic) BOOL drawsBottomSeparator;
+@property(assign, nonatomic) BOOL drawsTopSeparator;
 @end
 @interface SBTableViewCellDismissActionButton(ColorBanners)
 - (void)colorize:(int)color;

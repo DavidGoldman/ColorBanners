@@ -138,7 +138,7 @@ static void showTestBanner(CFNotificationCenterRef center, void *observer, CFStr
 - (void)layoutSubviews {
   %orig;
 
-  BOOL showSeparators = ([CBRPrefsManager sharedInstance].showSeparators);
+  BOOL showSeparators = [CBRPrefsManager sharedInstance].showSeparators;
 
   UITableView *tableView = MSHookIvar<UITableView *>(self, "_tableView");
   UITableViewCellSeparatorStyle style = 
@@ -347,6 +347,11 @@ static void showTestBanner(CFNotificationCenterRef center, void *observer, CFStr
 - (void)colorize:(int)color {
   CGFloat alpha = [CBRPrefsManager sharedInstance].lsAlpha * 3 / 4;
   self.backgroundColor = UIColorFromRGBWithAlpha(color, alpha);
+
+  if (![CBRPrefsManager sharedInstance].showSeparators) {
+    self.drawsBottomSeparator = NO;
+    self.drawsTopSeparator = NO;
+  }
 }
 
 %end
