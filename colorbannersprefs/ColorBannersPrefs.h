@@ -5,6 +5,7 @@
 
 @interface ColorBannersBannerPrefsController : PSListController {
   NSMutableArray *_constantColorSpecifiers;
+  NSArray *_liveAnalysisSpecifiers;
 }
 @end
 

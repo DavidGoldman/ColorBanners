@@ -23,6 +23,7 @@
 @property(nonatomic, assign, getter=shouldDisableDimming) BOOL disableDimming;
 
 @property(nonatomic, assign) BOOL wantsDeepBannerAnalyzing;
+@property(nonatomic, assign) BOOL wantsLiveAnalysis;
 
 @property(nonatomic, assign, getter=shouldRemoveBannersBlur) BOOL removeBannersBlur;
 @property(nonatomic, assign, getter=shouldHideQRRect) BOOL hideQRRect;

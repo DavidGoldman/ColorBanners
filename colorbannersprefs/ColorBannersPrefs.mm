@@ -9,6 +9,10 @@
 #define TEST_LS "com.golddavid.colorbanners/test-ls-notification"
 #define TEST_BANNER "com.golddavid.colorbanners/test-banner"
 
+
+#define DEEP_ANALYSIS_INFO @"Analyzes the view located below the banner when deciding the text color. Use this if you have a fairly low alpha level."
+#define LIVE_ANALYSIS_INFO @"Live analysis will continually check the background view for changes and update the text color as necessary."
+
 static void refreshPrefs(CFNotificationCenterRef center, void *observer, CFStringRef name, const void *object, CFDictionaryRef userInfo) {
   [[NSDistributedNotificationCenter defaultCenter] postNotificationName:INTERNAL_NOTIFICATION_NAME object:nil];
 }
@@ -109,6 +113,7 @@ static void refreshPrefsVolatile(CFNotificationCenterRef center, void *observer,
                                      CFSTR("com.golddavid.colorbanners/reloadprefs-banners"),
                                      NULL);
   [_constantColorSpecifiers release];
+  [_liveAnalysisSpecifiers release];
   [super dealloc];
 }
 
@@ -126,10 +131,30 @@ static void refreshPrefsVolatile(CFNotificationCenterRef center, void *observer,
 }
 
 // Thanks to MultitaskingGestures (https://github.com/hamzasood/MultitaskingGestures).
+- (void)setDeepBannerAnalysisEnabled:(NSNumber *)value forSpecifier:(PSSpecifier *)specifier {
+  PSSpecifier *groupSpecifier = [_specifiers specifierForID:@"AL GORE"];
+  [self setPreferenceValue:value specifier:specifier];
+
+  if ([value boolValue]) {
+    int index = [_specifiers indexOfObject:[_specifiers specifierForID:@"LIVE_ANALYSIS_MINUS_ONE"]] + 1;
+    [self insertContiguousSpecifiers:_liveAnalysisSpecifiers 
+                             atIndex:index
+                            animated:YES];
+    [groupSpecifier setProperty:LIVE_ANALYSIS_INFO forKey:@"footerText"];
+  } else {
+    [self removeContiguousSpecifiers:_liveAnalysisSpecifiers animated:YES];
+    [groupSpecifier setProperty:DEEP_ANALYSIS_INFO forKey:@"footerText"];
+  }
+
+  [self reloadSpecifier:groupSpecifier animated:YES];
+}
+
+// Thanks to MultitaskingGestures (https://github.com/hamzasood/MultitaskingGestures).
 - (id)specifiers {
   if(_specifiers == nil) {
     NSMutableArray *specifiers = [[self loadSpecifiersFromPlistName:@"Banners" target:self] mutableCopy];
 
+    // Handle constant color settings.
     [_constantColorSpecifiers release];
     _constantColorSpecifiers = [[NSMutableArray alloc] init];
     // Populate the _constantColorSpecifiers array.
@@ -148,6 +173,24 @@ static void refreshPrefsVolatile(CFNotificationCenterRef center, void *observer,
                                          CFSTR(PREFS_NAME),
                                          &keyExists) || !keyExists) {
       [specifiers removeObjectsInArray:_constantColorSpecifiers];
+    }
+
+    // Handle analysis settings.
+    [_liveAnalysisSpecifiers release];
+    _liveAnalysisSpecifiers = [NSArray arrayWithObject:[specifiers specifierForID:@"LIVE_ANALYSIS_CELL"]];
+    [_liveAnalysisSpecifiers retain];
+
+    // Find group specifier (to update footerText).
+    PSSpecifier *groupSpecifier = [specifiers specifierForID:@"AL GORE"];
+
+    keyExists = false;
+    if (!CFPreferencesGetAppBooleanValue(CFSTR("WantsDeepBannerAnalyzing"),
+                                         CFSTR(PREFS_NAME),
+                                         &keyExists) || !keyExists) {
+      [specifiers removeObjectsInArray:_liveAnalysisSpecifiers];
+      [groupSpecifier setProperty:DEEP_ANALYSIS_INFO forKey:@"footerText"];
+    } else {
+      [groupSpecifier setProperty:LIVE_ANALYSIS_INFO forKey:@"footerText"];
     }
 
     _specifiers = [specifiers copy];

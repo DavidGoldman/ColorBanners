@@ -694,12 +694,16 @@ static void showTestBanner(CFNotificationCenterRef center, void *observer, CFStr
     UIView *superview = self.superview;
     if ([superview isMemberOfClass:%c(SBBannerContextView)]) {
       SBBannerContextView *bannerView = (SBBannerContextView *)superview;
-      // _UIBackdropView *backdropView = MSHookIvar<_UIBackdropView *>(bannerView, "_backdropView");
 
       int color = [[bannerView cbr_color] intValue];
       int bgColor = colorToRGBInt(r, g, b);
       [bannerView colorize:color withBackground:bgColor];
-      // [backdropView setComputesColorSettings:NO];
+
+      // Only do the analysis once if not "live".
+      if (![CBRPrefsManager sharedInstance].wantsLiveAnalysis) {
+        _UIBackdropView *backdropView = MSHookIvar<_UIBackdropView *>(bannerView, "_backdropView");
+        [backdropView setComputesColorSettings:NO];
+      }
     }
   }
 }
