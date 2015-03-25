@@ -136,17 +136,19 @@ static void refreshPrefsVolatile(CFNotificationCenterRef center, void *observer,
   [self setPreferenceValue:value specifier:specifier];
 
   if ([value boolValue]) {
+    [groupSpecifier setProperty:LIVE_ANALYSIS_INFO forKey:@"footerText"];
+    [self reloadSpecifier:groupSpecifier animated:NO];
+
     int index = [_specifiers indexOfObject:[_specifiers specifierForID:@"LIVE_ANALYSIS_MINUS_ONE"]] + 1;
     [self insertContiguousSpecifiers:_liveAnalysisSpecifiers 
                              atIndex:index
                             animated:YES];
-    [groupSpecifier setProperty:LIVE_ANALYSIS_INFO forKey:@"footerText"];
   } else {
-    [self removeContiguousSpecifiers:_liveAnalysisSpecifiers animated:YES];
     [groupSpecifier setProperty:DEEP_ANALYSIS_INFO forKey:@"footerText"];
-  }
+    [self reloadSpecifier:groupSpecifier animated:NO];
 
-  [self reloadSpecifier:groupSpecifier animated:YES];
+    [self removeContiguousSpecifiers:_liveAnalysisSpecifiers animated:YES];
+  }
 }
 
 // Thanks to MultitaskingGestures (https://github.com/hamzasood/MultitaskingGestures).
