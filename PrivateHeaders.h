@@ -137,6 +137,8 @@
 
 - (NSNumber *)cbr_color;
 - (void)cbr_setColor:(NSNumber *)color;
+- (NSNumber *)cbr_prefersBlack;
+- (void)cbr_setPrefersBlack:(NSNumber *)prefersBlack;
 @end
 
 #pragma mark - Banner Buttons

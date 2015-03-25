@@ -364,10 +364,10 @@ static void showTestBanner(CFNotificationCenterRef center, void *observer, CFStr
 %new
 - (void)colorizeOrDefer:(int)color {
   [self cbr_setColor:@(color)];
+  [self colorize:color withBackground:-1];
 
   CBRPrefsManager *manager = [CBRPrefsManager sharedInstance];
   if (manager.bannerAlpha == 1 || !manager.wantsDeepBannerAnalyzing) {
-    [self colorize:color withBackground:-1];
     return;
   }
 
@@ -477,8 +477,16 @@ static void showTestBanner(CFNotificationCenterRef center, void *observer, CFStr
 %new
 - (void)colorize:(int)color withBackground:(int)bg {
   CGFloat alpha = [CBRPrefsManager sharedInstance].bannerAlpha;
-
   BOOL isWhite = (bg != -1) ? compositeIsWhitish(color, bg, alpha) : isWhitish(color);
+
+  NSNumber *curColor = [self cbr_color];
+  NSNumber *curPrefersBlack = [self cbr_prefersBlack];
+  if (curColor && curPrefersBlack
+      && [curColor intValue] == color && [curPrefersBlack boolValue] == isWhite) {
+    return;
+  }
+
+  [self cbr_setPrefersBlack:@(isWhite)];
 
   [self colorizeBackgroundForColor:color alpha:alpha preferringBlack:isWhite];
   [self colorizeTextForColor:color alpha:alpha preferringBlack:isWhite];
@@ -520,6 +528,19 @@ static void showTestBanner(CFNotificationCenterRef center, void *observer, CFStr
       [self colorizeOrDefer:color];
     }
   }
+}
+
+%new
+- (NSNumber *)cbr_prefersBlack {
+  return objc_getAssociatedObject(self, @selector(cbr_prefersBlack));
+}
+
+%new
+- (void)cbr_setPrefersBlack:(NSNumber *)prefersBlack {
+  objc_setAssociatedObject(self,
+                           @selector(cbr_prefersBlack),
+                           prefersBlack, 
+                           OBJC_ASSOCIATION_RETAIN_NONATOMIC);
 }
 
 - (void)layoutSubviews {
@@ -673,12 +694,12 @@ static void showTestBanner(CFNotificationCenterRef center, void *observer, CFStr
     UIView *superview = self.superview;
     if ([superview isMemberOfClass:%c(SBBannerContextView)]) {
       SBBannerContextView *bannerView = (SBBannerContextView *)superview;
-      _UIBackdropView *backdropView = MSHookIvar<_UIBackdropView *>(bannerView, "_backdropView");
+      // _UIBackdropView *backdropView = MSHookIvar<_UIBackdropView *>(bannerView, "_backdropView");
 
       int color = [[bannerView cbr_color] intValue];
       int bgColor = colorToRGBInt(r, g, b);
       [bannerView colorize:color withBackground:bgColor];
-      [backdropView setComputesColorSettings:NO];
+      // [backdropView setComputesColorSettings:NO];
     }
   }
 }
