@@ -188,7 +188,7 @@ static void refreshPrefsVolatile(CFNotificationCenterRef center, void *observer,
     keyExists = false;
     if (!CFPreferencesGetAppBooleanValue(CFSTR("WantsDeepBannerAnalyzing"),
                                          CFSTR(PREFS_NAME),
-                                         &keyExists) || !keyExists) {
+                                         &keyExists) && keyExists) {
       [specifiers removeObjectsInArray:_liveAnalysisSpecifiers];
       [groupSpecifier setProperty:DEEP_ANALYSIS_INFO forKey:@"footerText"];
     } else {
