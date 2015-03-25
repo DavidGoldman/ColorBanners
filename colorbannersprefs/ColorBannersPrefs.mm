@@ -11,7 +11,7 @@
 
 
 #define DEEP_ANALYSIS_INFO @"Analyzes the view located below the banner when deciding the text color. Use this if you have a fairly low alpha level."
-#define LIVE_ANALYSIS_INFO @"Live analysis will continually check the background view for changes and update the text color as necessary."
+#define LIVE_ANALYSIS_INFO @"Live analysis will continually check the view located below the banner for changes and update the text color as necessary."
 
 static void refreshPrefs(CFNotificationCenterRef center, void *observer, CFStringRef name, const void *object, CFDictionaryRef userInfo) {
   [[NSDistributedNotificationCenter defaultCenter] postNotificationName:INTERNAL_NOTIFICATION_NAME object:nil];
