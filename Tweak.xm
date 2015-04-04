@@ -55,6 +55,9 @@ static void showTestLockScreenNotification(CFNotificationCenterRef center, void 
     bulletin.sectionID = [CBRAppList randomAppIdentifier];
     bulletin.bulletinID = @"com.golddavid.colorbanners";
 
+    NSURL *url= [NSURL URLWithString:@"prefs:root=ColorBanners"];
+    bulletin.defaultAction = [%c(BBAction) actionWithLaunchURL:url];
+
     SBLockScreenManager *manager = [%c(SBLockScreenManager) sharedInstance];
     SBLockScreenViewController *vc = manager.lockScreenViewController;
     SBLockScreenNotificationListController *lsNotificationListController = MSHookIvar<id>(vc, "_notificationController");

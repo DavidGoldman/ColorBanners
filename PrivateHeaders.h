@@ -12,6 +12,7 @@
 
 @interface BBAction : NSObject
 + (id)action;
++ (id)actionWithLaunchURL:(id)url;
 @end
 
 @interface BBBulletin
