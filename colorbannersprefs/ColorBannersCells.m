@@ -4,10 +4,11 @@
 
 - (instancetype)initWithStyle:(int)style reuseIdentifier:(id)reuseIdentifier specifier:(id)specifier {
   self = [super initWithStyle:style reuseIdentifier:reuseIdentifier specifier:specifier];
+
   if (self) {
     self.backgroundColor = [UIColor clearColor];
 
-    CGFloat width = [[UIScreen mainScreen] bounds].size.width;
+    CGFloat width = self.contentView.bounds.size.width;
     CGRect titleFrame = CGRectMake(0, 20, width, 55);
     CGRect subtitleFrame = CGRectMake(0, 75, width, 19);
 
@@ -17,6 +18,8 @@
     _titleLabel.text = @"ColorBanners";
     _titleLabel.backgroundColor = [UIColor clearColor];
     _titleLabel.textAlignment = NSTextAlignmentCenter;
+    _titleLabel.autoresizingMask = UIViewAutoresizingFlexibleWidth;
+    _titleLabel.contentMode = UIViewContentModeScaleToFill;
 
     _subtitleLabel = [[UILabel alloc] initWithFrame:subtitleFrame];
     _subtitleLabel.font = [UIFont fontWithName:@"HelveticaNeue-Light" size:16];
@@ -24,21 +27,28 @@
     _subtitleLabel.backgroundColor = [UIColor clearColor];
     _subtitleLabel.textColor = [UIColor grayColor];
     _subtitleLabel.textAlignment = NSTextAlignmentCenter;
-
-    [self addSubview:_titleLabel];
-    [self addSubview:_subtitleLabel];
+    _subtitleLabel.autoresizingMask = UIViewAutoresizingFlexibleWidth;
+    _subtitleLabel.contentMode = UIViewContentModeScaleToFill;
+    [self.contentView addSubview:_titleLabel];
+    [self.contentView addSubview:_subtitleLabel];
   }
   return self;
+}
+
+- (instancetype)initWithSpecifier:(PSSpecifier *)specifier {
+  return [self initWithStyle:UITableViewCellStyleDefault reuseIdentifier:@"CBRHeaderCell" specifier:specifier];
+}
+
+- (void)setFrame:(CGRect)frame {
+  // Fix for iPad.
+  frame.origin.x = 0;
+  [super setFrame:frame];
 }
 
 - (void)dealloc {
   [_titleLabel release];
   [_subtitleLabel release];
   [super dealloc];
-}
-
-- (instancetype)initWithSpecifier:(PSSpecifier *)specifier {
-  return [self initWithStyle:UITableViewCellStyleDefault reuseIdentifier:@"CBRHeaderCell" specifier:specifier];
 }
 
 - (CGFloat)preferredHeightForWidth:(CGFloat)width {
