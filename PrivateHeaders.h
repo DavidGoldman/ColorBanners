@@ -133,8 +133,8 @@
 - (void)colorizeTextForColor:(int)color alpha:(CGFloat)alpha preferringBlack:(BOOL)wantsBlack;
 - (void)colorizeGrabberForColor:(int)color alpha:(CGFloat)alpha preferringBlack:(BOOL)wantsBlack;
 - (void)colorizePullDownForColor:(int)color alpha:(CGFloat)alpha preferringBlack:(BOOL)wantsBlack;
-- (void)colorize:(int)color withBackground:(int)bg;
-- (void)colorizeOrDefer:(int)color;
+- (void)colorize:(int)color withBackground:(int)bg force:(BOOL)force;
+- (void)colorize:(int)color;
 
 - (NSNumber *)cbr_color;
 - (void)cbr_setColor:(NSNumber *)color;

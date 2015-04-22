@@ -235,6 +235,9 @@ static void showTestBanner(CFNotificationCenterRef center, void *observer, CFStr
   self.eventDateLabel.layer.compositingFilter = compositingFilter;
   self.relevanceDateLabel.layer.compositingFilter = compositingFilter;
   MSHookIvar<UILabel *>(self, "_unlockTextLabel").layer.compositingFilter = compositingFilter;
+
+  // TODO(DavidGoldman): See if this "smart" refresh/reversion is worth it. I highly doubt it.
+  [self colorizeText:color];
 }
 
 %new
@@ -365,9 +368,9 @@ static void showTestBanner(CFNotificationCenterRef center, void *observer, CFStr
 %hook SBBannerContextView
 
 %new
-- (void)colorizeOrDefer:(int)color {
+- (void)colorize:(int)color {
   [self cbr_setColor:@(color)];
-  [self colorize:color withBackground:-1];
+  [self colorize:color withBackground:-1 force:YES];
 
   CBRPrefsManager *manager = [CBRPrefsManager sharedInstance];
   if (manager.bannerAlpha == 1 || !manager.wantsDeepBannerAnalyzing) {
@@ -478,15 +481,17 @@ static void showTestBanner(CFNotificationCenterRef center, void *observer, CFStr
 }
 
 %new
-- (void)colorize:(int)color withBackground:(int)bg {
+- (void)colorize:(int)color withBackground:(int)bg force:(BOOL)force {
   CGFloat alpha = [CBRPrefsManager sharedInstance].bannerAlpha;
   BOOL isWhite = (bg != -1) ? compositeIsWhitish(color, bg, alpha) : isWhitish(color);
 
-  NSNumber *curColor = [self cbr_color];
-  NSNumber *curPrefersBlack = [self cbr_prefersBlack];
-  if (curColor && curPrefersBlack
-      && [curColor intValue] == color && [curPrefersBlack boolValue] == isWhite) {
-    return;
+  if (!force) {
+    NSNumber *curColor = [self cbr_color];
+    NSNumber *curPrefersBlack = [self cbr_prefersBlack];
+    if (curColor && curPrefersBlack
+        && [curColor intValue] == color && [curPrefersBlack boolValue] == isWhite) {
+      return;
+    }
   }
 
   [self cbr_setPrefersBlack:@(isWhite)];
@@ -528,7 +533,7 @@ static void showTestBanner(CFNotificationCenterRef center, void *observer, CFStr
         color = [[CBRColorCache sharedInstance] colorForIdentifier:identifier image:image];
       }
 
-      [self colorizeOrDefer:color];
+      [self colorize:color];
     }
   }
 }
@@ -700,7 +705,7 @@ static void showTestBanner(CFNotificationCenterRef center, void *observer, CFStr
 
       int color = [[bannerView cbr_color] intValue];
       int bgColor = colorToRGBInt(r, g, b);
-      [bannerView colorize:color withBackground:bgColor];
+      [bannerView colorize:color withBackground:bgColor force:NO];
 
       // Only do the analysis once if not "live".
       if (![CBRPrefsManager sharedInstance].wantsLiveAnalysis) {
