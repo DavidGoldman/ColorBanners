@@ -23,6 +23,7 @@
 #define LS_BG_KEY @"LSBackgroundColor"
 #define LS_CONSTANT_KEY @"LSUseConstant"
 
+#define CORNERS_KEY @"RoundCorners"
 #define BLUR_KEY @"RemoveBlur"
 #define SEPARATORS_KEY @"ShowSeparators"
 #define DIMMING_KEY @"DisableDimming"
@@ -98,6 +99,7 @@ static int RGBColorFromNSString(NSString *str) {
   _lsBackgroundColor = [self rgbColorForNSString:prefs[LS_BG_KEY] withDefault:DEFAULT_COLOR];
   _lsUseConstantColor = [self boolForValue:prefs[LS_CONSTANT_KEY] withDefault:NO];
 
+  _roundCorners = [self boolForValue:prefs[CORNERS_KEY] withDefault:NO];
   _removeLSBlur = [self boolForValue:prefs[BLUR_KEY] withDefault:NO];
   _showSeparators = [self boolForValue:prefs[SEPARATORS_KEY] withDefault:NO];
   _disableDimming = [self boolForValue:prefs[DIMMING_KEY] withDefault:YES];

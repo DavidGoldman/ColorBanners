@@ -533,6 +533,11 @@ static void showTestBanner(CFNotificationCenterRef center, void *observer, CFStr
         color = [[CBRColorCache sharedInstance] colorForIdentifier:identifier image:image];
       }
 
+      if (prefsManager.roundCorners) {
+        self.layer.cornerRadius = 5;
+        self.layer.masksToBounds = YES;
+      }
+
       [self colorize:color];
     }
   }

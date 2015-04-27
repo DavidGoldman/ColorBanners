@@ -97,6 +97,14 @@
     },
     {
       cell = PSSwitchCell;
+      label = "Round Corners";
+      key = "RoundCorners";
+      default = 0;
+      defaults = "com.golddavid.colorbanners";
+      PostNotification = "com.golddavid.colorbanners/reloadprefs";
+    },
+    {
+      cell = PSSwitchCell;
       label = "Remove Banner Blur";
       key = "RemoveBannersBlur";
       default = 0;
