@@ -28,6 +28,12 @@
 #define SEPARATORS_KEY @"ShowSeparators"
 #define DIMMING_KEY @"DisableDimming"
 
+#define NC_KEY @"NCEnabled"
+#define NC_GRADIENT_KEY @"NCGradient"
+#define NC_ALPHA_KEY @"NCAlpha"
+#define NC_BG_KEY @"NCBackgroundColor"
+#define NC_CONSTANT_KEY @"NCUseConstant"
+
 // From ColorBadges.h.
 #define GETRED(rgb) ((rgb >> 16) & 0xFF)
 #define GETGREEN(rgb) ((rgb >> 8) & 0xFF)
@@ -103,6 +109,12 @@ static int RGBColorFromNSString(NSString *str) {
   _removeLSBlur = [self boolForValue:prefs[BLUR_KEY] withDefault:NO];
   _showSeparators = [self boolForValue:prefs[SEPARATORS_KEY] withDefault:NO];
   _disableDimming = [self boolForValue:prefs[DIMMING_KEY] withDefault:YES];
+
+  _ncEnabled = [self boolForValue:prefs[NC_KEY] withDefault:YES];
+  _useNCGradient = [self boolForValue:prefs[NC_GRADIENT_KEY] withDefault:YES];
+  _ncAlpha = [self floatForValue:prefs[NC_ALPHA_KEY] withDefault:0.7];
+  _ncBackgroundColor = [self rgbColorForNSString:prefs[NC_BG_KEY] withDefault:DEFAULT_COLOR];
+  _ncUseConstantColor = [self boolForValue:prefs[NC_CONSTANT_KEY] withDefault:NO];
 }
 
 - (BOOL)boolForValue:(NSNumber *)value withDefault:(BOOL)defaultValue {

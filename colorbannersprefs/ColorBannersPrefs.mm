@@ -308,3 +308,73 @@ static void refreshPrefsVolatile(CFNotificationCenterRef center, void *observer,
 }
 
 @end
+
+@implementation ColorBannersNCPrefsController
+
+- (instancetype)init {
+  self = [super init];
+  if (self) {
+    CFNotificationCenterAddObserver(CFNotificationCenterGetDarwinNotifyCenter(), 
+                                    self,
+                                    &refreshPrefsVolatile,
+                                    CFSTR("com.golddavid.colorbanners/reloadprefs-nc"),
+                                    NULL,
+                                    0);
+  }
+  return self;
+}
+
+- (void)dealloc {
+  CFNotificationCenterRemoveObserver(CFNotificationCenterGetDarwinNotifyCenter(),
+                                     self,
+                                     CFSTR("com.golddavid.colorbanners/reloadprefs-nc"),
+                                     NULL);
+  [_constantColorSpecifiers release];
+  [super dealloc];
+}
+
+// Thanks to MultitaskingGestures (https://github.com/hamzasood/MultitaskingGestures).
+- (void)setNCConstantColorsEnabled:(NSNumber *)value forSpecifier:(PSSpecifier *)specifier {
+  [self setPreferenceValue:value specifier:specifier];
+  if ([value boolValue]) {
+    int index = [_specifiers indexOfObject:[_specifiers specifierForID:@"CUSTOM_COLOR_MINUS_ONE"]] + 1;
+    [self insertContiguousSpecifiers:_constantColorSpecifiers 
+                             atIndex:index
+                            animated:YES];
+  } else {
+    [self removeContiguousSpecifiers:_constantColorSpecifiers animated:YES];
+  }
+}
+
+// Thanks to MultitaskingGestures (https://github.com/hamzasood/MultitaskingGestures).
+- (id)specifiers {
+  if(_specifiers == nil) {
+    NSMutableArray *specifiers = [[self loadSpecifiersFromPlistName:@"NotificationCenter" target:self] mutableCopy];
+
+    [_constantColorSpecifiers release];
+    _constantColorSpecifiers = [[NSMutableArray alloc] init];
+    // Populate the _constantColorSpecifiers array.
+    int index = [specifiers indexOfObject:[specifiers specifierForID:@"CUSTOM_COLOR_MINUS_ONE"]] + 1;
+    for (int i = index; i < specifiers.count; ++i) {
+      PSSpecifier *currentSpec = specifiers[i];
+      if (![currentSpec.identifier isEqualToString:@"CUSTOM_COLOR_GROUP"] &&
+           [[PSTableCell stringFromCellType:currentSpec.cellType] isEqualToString:@"PSGroupCell"]) {
+        break;
+      }
+      [_constantColorSpecifiers addObject:currentSpec];
+    }
+
+    Boolean keyExists = false;
+    if (!CFPreferencesGetAppBooleanValue(CFSTR("NCUseConstant"),
+                                         CFSTR(PREFS_NAME),
+                                         &keyExists) || !keyExists) {
+      [specifiers removeObjectsInArray:_constantColorSpecifiers];
+    }
+
+    _specifiers = [specifiers copy];
+    [specifiers release];
+  }
+  return _specifiers;
+}
+
+@end

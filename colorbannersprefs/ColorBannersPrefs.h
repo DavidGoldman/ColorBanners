@@ -14,6 +14,11 @@
 }
 @end
 
+@interface ColorBannersNCPrefsController : PSListController {
+  NSMutableArray *_constantColorSpecifiers;
+}
+@end
+
 @protocol PreferencesTableCustomView
 - (id)initWithSpecifier:(id)specifier;
 @optional

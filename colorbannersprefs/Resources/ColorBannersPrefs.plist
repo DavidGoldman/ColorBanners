@@ -25,6 +25,16 @@
       defaults = "com.golddavid.colorbanners";
       get = "getLabelForSpecifier:";
     },
+    {
+      cell = PSLinkListCell;
+      detail = ColorBannersNCPrefsController;
+      label = "Notification Center";
+      icon = "NC.png";
+      key = "NCEnabled";
+      default = 1;
+      defaults = "com.golddavid.colorbanners";
+      get = "getLabelForSpecifier:";
+    },
 
     {
       cell = PSGroupCell;
