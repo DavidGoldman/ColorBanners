@@ -754,6 +754,142 @@ static void showTestBanner(CFNotificationCenterRef center, void *observer, CFStr
 %end
 %end
 
+%group NotificationCenter
+
+%hook SBNotificationCenterSectionInfo
+
+- (void)populateReusableView:(UIView *)view {
+  %orig;
+
+  if ([view isKindOfClass:%c(SBNotificationCenterHeaderView)]) {
+    SBNotificationCenterHeaderView *headerView = (SBNotificationCenterHeaderView *)view;
+    CBRPrefsManager *prefsManager = [CBRPrefsManager sharedInstance];
+
+    if (!prefsManager.ncEnabled) {
+      [headerView cbr_setColor:nil];
+      return;
+    }
+
+    int color;
+
+    if (prefsManager.ncUseConstantColor) {
+      color = prefsManager.ncBackgroundColor;
+    } else {
+      NSString *identifier = self.listSectionIdentifier;
+      UIImage *image = self.representedListSection.iconImage;
+
+      if (!image) {
+        [headerView cbr_setColor:nil];
+        return;
+      }
+
+      color = [[CBRColorCache sharedInstance] colorForIdentifier:identifier image:image];
+    }
+
+    [headerView cbr_setColor:@(color)];
+  }
+}
+
+%end
+
+%hook SBNotificationCenterHeaderView
+
+- (void)setGraphicsQuality:(NSInteger)quality {
+  %orig;
+
+  NSNumber *color = [self cbr_color];
+  NSNumber *activeColor = [self cbr_activeColor];
+
+  if (color == activeColor || [color isEqual:activeColor]) {
+    return;
+  }
+
+  if (color) {
+    [self cbr_colorize:[color intValue]];
+  } else {
+    [self cbr_revert];
+  }
+}
+
+- (void)layoutSubviews {
+  %orig;
+
+  CBRGradientView *gradientView = (CBRGradientView *)[self.contentView viewWithTag:VIEW_TAG];
+  gradientView.frame = self.contentView.bounds;
+}
+
+%new
+- (void)cbr_colorize:(int)color {
+  [self cbr_setActiveColor:@(color)];
+
+  // Create/update gradient.
+  CBRGradientView *gradientView = (CBRGradientView *)[self.contentView viewWithTag:VIEW_TAG];
+  UIColor *color1 = UIColorFromRGB(color);
+
+  if (!gradientView) {
+    gradientView = [[CBRGradientView alloc] initWithFrame:self.contentView.bounds];
+    gradientView.tag = VIEW_TAG;
+    [self.contentView insertSubview:gradientView atIndex:0];
+    [gradientView autorelease];
+  }
+  gradientView.hidden = NO;
+  gradientView.alpha = [CBRPrefsManager sharedInstance].ncAlpha;
+
+  if ([CBRPrefsManager sharedInstance].useNCGradient) {
+    UIColor *color2 = (isWhitish(color)) ? [color1 cbr_darken:0.1] : [color1 cbr_lighten:0.1];
+    NSArray *colors = @[ (id)color1.CGColor, (id)color2.CGColor ];
+    [gradientView setColors:colors];
+  } else {
+    [gradientView setSolidColor:color1];
+  }
+
+  _UIBackdropView *backdropView = MSHookIvar<_UIBackdropView *>(self, "_backdrop");
+  UIView *view = MSHookIvar<UIView *>(self, "_plusDView");
+  backdropView.hidden = YES;
+  view.hidden = YES;
+
+  UILabel *label = self.titleLabel;
+  label.textColor = (isWhitish(color)) ? [UIColor darkGrayColor] : [UIColor whiteColor];
+}
+
+%new
+- (void)cbr_revert {
+  [self cbr_setActiveColor:nil];
+  CBRGradientView *gradientView = (CBRGradientView *)[self.contentView viewWithTag:VIEW_TAG];
+  gradientView.hidden = YES;
+
+  _UIBackdropView *backdropView = MSHookIvar<_UIBackdropView *>(self, "_backdrop");
+  UIView *view = MSHookIvar<UIView *>(self, "_plusDView");
+  backdropView.hidden = NO;
+  view.hidden = NO;
+
+  UILabel *label = self.titleLabel;
+  label.textColor = UIColorFromRGBWithAlpha(0xFFFFFF, 0.7);
+}
+
+%new
+- (NSNumber *)cbr_activeColor {
+  return objc_getAssociatedObject(self, @selector(cbr_activeColor));
+}
+
+%new
+- (void)cbr_setActiveColor:(NSNumber *)color {
+  objc_setAssociatedObject(self, @selector(cbr_activeColor), color, OBJC_ASSOCIATION_RETAIN_NONATOMIC);
+}
+
+%new
+- (NSNumber *)cbr_color {
+  return objc_getAssociatedObject(self, @selector(cbr_color));
+}
+
+%new
+- (void)cbr_setColor:(NSNumber *)color {
+  objc_setAssociatedObject(self, @selector(cbr_color), color, OBJC_ASSOCIATION_RETAIN_NONATOMIC);
+}
+
+%end
+%end
+
 // TODO(DavidGoldman): Colorize the text properly.
 %group QuickReply
 %hook CKInlineReplyViewController
@@ -778,6 +914,7 @@ static void showTestBanner(CFNotificationCenterRef center, void *observer, CFStr
   if ([bundle isEqualToString:@"com.apple.springboard"]) {
     %init(LockScreen);
     %init(Banners);
+    %init(NotificationCenter);
     %init(RemoveUnderlay);
 
     CFNotificationCenterAddObserver(CFNotificationCenterGetDarwinNotifyCenter(),

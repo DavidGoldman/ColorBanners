@@ -199,6 +199,29 @@
 - (id)statisticsValues;
 @end
 
+// Notification Center.
+
+@interface SBBulletinListSection : NSObject
+@property(retain, nonatomic) UIImage *iconImage;
+@end
+
+@interface SBNotificationCenterSectionInfo : NSObject
+@property(readonly, assign, nonatomic) NSString *listSectionIdentifier;
+@property(readonly, assign, nonatomic) SBBulletinListSection *representedListSection;
+@end
+
+@interface SBNotificationCenterHeaderView : UIView
+@property(readonly, assign, nonatomic) UILabel *titleLabel;
+@property(nonatomic,retain,readonly) UIView *contentView;
+- (NSNumber *)cbr_color;
+- (void)cbr_setColor:(NSNumber *)color;
+- (NSNumber *)cbr_activeColor;
+- (void)cbr_setActiveColor:(NSNumber *)color;
+
+- (void)cbr_colorize:(int)color;
+- (void)cbr_revert;
+@end
+
 #pragma mark - QuickReply
 
 @interface _UITextFieldRoundedRectBackgroundViewNeue : UIImageView
