@@ -527,8 +527,23 @@ static void showTestBanner(CFNotificationCenterRef center, void *observer, CFStr
       if (prefsManager.bannersUseConstantColor) {
         color = prefsManager.bannerBackgroundColor;
       } else {
-        SBBulletinBannerItem *item = [context item];
-        NSString *identifier = [item seedBulletin].sectionID;
+        id item = [context item];
+        NSString *identifier = nil;
+
+        if ([item isKindOfClass:%c(SBBulletinBannerItem)]) {
+          identifier = [item seedBulletin].sectionID;
+        } else if ([item isKindOfClass:%c(SBLockScreenNotificationBannerItem)]) {
+          SBAwayBulletinListItem *listItem = [item listItem];
+          identifier = listItem.activeBulletin.sectionID;
+        } else {
+          // Revert/don't color.
+          CBRLOG(@"Unknown bulletin item %@", item);
+
+          CBRGradientView *gradientView = (CBRGradientView *)[self viewWithTag:VIEW_TAG];
+          gradientView.hidden = YES; // Not sure if needed (probably isn't).
+          return;
+        }
+
         UIImage *image = [item iconImage];
         color = [[CBRColorCache sharedInstance] colorForIdentifier:identifier image:image];
       }

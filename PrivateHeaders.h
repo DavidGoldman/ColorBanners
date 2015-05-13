@@ -102,6 +102,12 @@
 - (BBBulletin *)seedBulletin;
 @end
 
+@interface SBLockScreenNotificationBannerItem
+@property(readonly, assign, nonatomic) SBAwayBulletinListItem *listItem;
+
+- (id)iconImage;
+@end
+
 @interface SBDefaultBannerView : UIView
 - (void)setColor:(id)color forElement:(int)element;
 - (void)_setRelevanceDateColor:(id)color;
@@ -121,7 +127,7 @@
 @end
 
 @interface SBUIBannerContext : NSObject
-- (SBBulletinBannerItem *)item;
+- (id)item;
 @end
 
 @interface SBBannerContextView : UIView
