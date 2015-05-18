@@ -53,6 +53,7 @@
     {
       cell = PSGroupCell;
       label = "Notification Background Alpha";
+      footerText = "Changes may require a respring to properly take effect.";
     },
     {
       cell = PSSliderCell;

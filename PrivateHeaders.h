@@ -45,6 +45,12 @@
 - (void)_dismissIntervalElapsed;
 @end
 
+// Respringing.
+
+@interface SpringBoard : UIApplication
+- (void)_relaunchSpringBoardNow;
+@end
+
 // Lockscreen Notifications.
 
 @interface SBAwayBulletinListItem : NSObject

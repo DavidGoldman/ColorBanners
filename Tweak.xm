@@ -103,6 +103,11 @@ static void showTestBanner(CFNotificationCenterRef center, void *observer, CFStr
   [bc observer:nil addBulletin:bulletin forFeed:2];
 }
 
+static void respring(CFNotificationCenterRef center, void *observer, CFStringRef name, const void *object, CFDictionaryRef userInfo) {
+  [(SpringBoard *)[UIApplication sharedApplication] _relaunchSpringBoardNow];
+}
+
+
 %group LockScreen
 %hook SBLockScreenNotificationListView
 
@@ -942,6 +947,12 @@ static void showTestBanner(CFNotificationCenterRef center, void *observer, CFStr
                                     NULL,
                                     &showTestBanner,
                                     CFSTR(TEST_BANNER),
+                                    NULL,
+                                    0);
+    CFNotificationCenterAddObserver(CFNotificationCenterGetDarwinNotifyCenter(),
+                                    NULL,
+                                    &respring,
+                                    CFSTR(RESPRING),
                                     NULL,
                                     0);
   }

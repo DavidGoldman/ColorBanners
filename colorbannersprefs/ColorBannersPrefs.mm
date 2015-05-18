@@ -8,6 +8,7 @@
 #define INTERNAL_NOTIFICATION_NAME @"CBRReloadPreferences"
 #define TEST_LS "com.golddavid.colorbanners/test-ls-notification"
 #define TEST_BANNER "com.golddavid.colorbanners/test-banner"
+#define RESPRING "com.golddavid.colorbanners/respring"
 
 
 #define DEEP_ANALYSIS_INFO @"Analyzes the view located below the banner when deciding the text color. Use this if you have a fairly low alpha level."
@@ -375,6 +376,24 @@ static void refreshPrefsVolatile(CFNotificationCenterRef center, void *observer,
     [specifiers release];
   }
   return _specifiers;
+}
+
+- (void)respring:(id)sender {
+  CFNotificationCenterPostNotification(CFNotificationCenterGetDarwinNotifyCenter(),
+                                       CFSTR(RESPRING),
+                                       nil,
+                                       nil,
+                                       true);
+}
+
+- (void)viewDidLoad {
+  [super viewDidLoad];
+
+  UIBarButtonItem *button = [[UIBarButtonItem alloc] initWithTitle:@"Respring"
+                                                             style:UIBarButtonItemStylePlain
+                                                            target:self
+                                                            action:@selector(respring:)];
+  self.navigationItem.rightBarButtonItem = [button autorelease];
 }
 
 @end
