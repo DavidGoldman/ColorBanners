@@ -211,7 +211,7 @@
 - (id)statisticsValues;
 @end
 
-// Notification Center.
+// Notification Center - headers.
 
 @interface SBBulletinListSection : NSObject
 @property(retain, nonatomic) UIImage *iconImage;
@@ -232,6 +232,22 @@
 
 - (void)cbr_colorize:(int)color;
 - (void)cbr_revert;
+@end
+
+// Notification center - cells.
+
+@interface SBNotificationsBulletinInfo : NSObject
+@property (nonatomic,retain) SBNotificationCenterSectionInfo *sectionInfo;
+@property (nonatomic,retain) UIImage *icon;
+
+@property (nonatomic,readonly) NSString *originalSectionIdentifier; 
+@property (nonatomic,readonly) BBBulletin *representedBulletin;
+@end
+
+@interface SBNotificationsAllModeBulletinInfo : SBNotificationsBulletinInfo
+@end
+
+@interface SBNotificationsBulletinCell : UIView
 @end
 
 #pragma mark - QuickReply

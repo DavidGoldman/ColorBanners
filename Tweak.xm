@@ -776,6 +776,30 @@ static void respring(CFNotificationCenterRef center, void *observer, CFStringRef
 
 %group NotificationCenter
 
+
+// TODO(DavidGoldman): Finish this (coloring NC cells).
+// %hook SBNotificationsAllModeBulletinInfo
+
+// - (void)populateReusableView:(UIView *)view {
+//   if (![view isKindOfClass:%c(SBNotificationsBulletinCell)]) {
+//     %orig;
+//     return;
+//   }
+
+//   SBNotificationsBulletinCell *cell = (SBNotificationsBulletinCell *)view;
+
+//   %orig;
+
+//   SBNotificationCenterSectionInfo *sectionInfo = self.sectionInfo;
+//   NSString *identifier = sectionInfo.listSectionIdentifier;
+//   UIImage *image = sectionInfo.representedListSection.iconImage;
+
+//   int color = [[CBRColorCache sharedInstance] colorForIdentifier:identifier image:image];
+//   cell.backgroundColor = UIColorFromRGBWithAlpha(color, 0.7);
+// }
+
+// %end
+
 %hook SBNotificationCenterSectionInfo
 
 - (void)populateReusableView:(UIView *)view {
