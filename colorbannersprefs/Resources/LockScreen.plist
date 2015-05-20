@@ -92,6 +92,19 @@
       default = 0;
       defaults = "com.golddavid.colorbanners";
       PostNotification = "com.golddavid.colorbanners/reloadprefs";
+    },
+
+    {
+      cell = PSGroupCell;
+      footerText = "Enable this if you're using a low alpha level with a dark lockscreen wallpaper.";
+    },
+    {
+      cell = PSSwitchCell;
+      label = "Prefer White Text";
+      key = "PrefersWhiteText";
+      default = 0;
+      defaults = "com.golddavid.colorbanners";
+      PostNotification = "com.golddavid.colorbanners/reloadprefs";
     }
   );
 }

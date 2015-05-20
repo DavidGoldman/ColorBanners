@@ -10,6 +10,7 @@
 
 #define UIColorFromRGBWithAlpha(rgb, a) [UIColor colorWithRed:GETRED(rgb)/255.0 green:GETGREEN(rgb)/255.0 blue:GETBLUE(rgb)/255.0 alpha:a]
 #define VIEW_TAG 0xDAE1DEE
+#define DARK_GRAY 0x555555
 
 static BOOL isWhitish(int rgb) {
   return ![CBRColorCache isDarkColor:rgb];
@@ -35,6 +36,14 @@ static BOOL compositeIsWhitish(int rgb, int bg, CGFloat fgAlpha) {
   int outGreen = (int)(fgAlpha * g) + (int)(bgAlpha * y);
   int outBlue = (int)(fgAlpha * b) + (int)(bgAlpha * z);
   return isWhitish(colorToRGBInt(outRed, outGreen, outBlue));
+}
+
+// Hack to improve the LS text coloring when the "prefersWhiteText" option is enabled.
+static BOOL ls_isWhitish(int rgb) {
+  if ([CBRPrefsManager sharedInstance].prefersWhiteText) {
+    return compositeIsWhitish(rgb, DARK_GRAY, [CBRPrefsManager sharedInstance].lsAlpha);
+  }
+  return isWhitish(rgb);
 }
 
 static NSAttributedString * copyAttributedStringWithColor(NSAttributedString *str, UIColor *color) {
@@ -173,7 +182,7 @@ static void respring(CFNotificationCenterRef center, void *observer, CFStringRef
 
 - (UIColor *)_vibrantTextColor {
   NSNumber *colorObj = [self cbr_color];
-  if (colorObj && isWhitish([colorObj intValue])) {
+  if (colorObj && ls_isWhitish([colorObj intValue])) {
     return [UIColor darkGrayColor];
   }
   return %orig;
@@ -184,7 +193,7 @@ static void respring(CFNotificationCenterRef center, void *observer, CFStringRef
   %orig;
 
   NSNumber *colorObj = [self cbr_color];
-  if (colorObj && isWhitish([colorObj intValue])) {
+  if (colorObj && ls_isWhitish([colorObj intValue])) {
     MSHookIvar<UILabel *>(self, "_unlockTextLabel").layer.compositingFilter = nil;
   }
 }
@@ -234,7 +243,7 @@ static void respring(CFNotificationCenterRef center, void *observer, CFStringRef
   CBRGradientView *gradientView = (CBRGradientView *)[self.realContentView viewWithTag:VIEW_TAG];
   gradientView.alpha = [CBRPrefsManager sharedInstance].lsAlpha;
 
-  BOOL wantsBlack = isWhitish(color);
+  BOOL wantsBlack = ls_isWhitish(color);
   NSString *compositingFilter = (wantsBlack) ? nil : @"colorDodgeBlendMode";
 
   self.eventDateLabel.layer.compositingFilter = compositingFilter;
@@ -260,7 +269,7 @@ static void respring(CFNotificationCenterRef center, void *observer, CFStringRef
   gradientView.alpha = [CBRPrefsManager sharedInstance].lsAlpha;
 
   if ([CBRPrefsManager sharedInstance].useLSGradient) {
-    UIColor *color2 = (isWhitish(color)) ? [color1 cbr_darken:0.2] : [color1 cbr_lighten:0.2];
+    UIColor *color2 = (ls_isWhitish(color)) ? [color1 cbr_darken:0.2] : [color1 cbr_lighten:0.2];
     NSArray *colors = @[ (id)color1.CGColor, (id)color2.CGColor ];
     [gradientView setColors:colors];
   } else {
@@ -270,7 +279,7 @@ static void respring(CFNotificationCenterRef center, void *observer, CFStringRef
 
 %new
 - (void)colorizeText:(int)color {
-  BOOL wantsBlack = isWhitish(color);
+  BOOL wantsBlack = ls_isWhitish(color);
   NSString *compositingFilter = (wantsBlack) ? nil : @"colorDodgeBlendMode";
 
   self.eventDateLabel.layer.compositingFilter = compositingFilter;

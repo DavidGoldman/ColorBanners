@@ -27,6 +27,7 @@
 #define BLUR_KEY @"RemoveBlur"
 #define SEPARATORS_KEY @"ShowSeparators"
 #define DIMMING_KEY @"DisableDimming"
+#define WHITE_TEXT_KEY @"PrefersWhiteText"
 
 #define NC_KEY @"NCEnabled"
 #define NC_GRADIENT_KEY @"NCGradient"
@@ -109,6 +110,7 @@ static int RGBColorFromNSString(NSString *str) {
   _removeLSBlur = [self boolForValue:prefs[BLUR_KEY] withDefault:NO];
   _showSeparators = [self boolForValue:prefs[SEPARATORS_KEY] withDefault:NO];
   _disableDimming = [self boolForValue:prefs[DIMMING_KEY] withDefault:YES];
+  _prefersWhiteText = [self boolForValue:prefs[WHITE_TEXT_KEY] withDefault:NO];
 
   _ncEnabled = [self boolForValue:prefs[NC_KEY] withDefault:YES];
   _useNCGradient = [self boolForValue:prefs[NC_GRADIENT_KEY] withDefault:YES];
