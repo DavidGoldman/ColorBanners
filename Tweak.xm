@@ -887,9 +887,8 @@ static void respring(CFNotificationCenterRef center, void *observer, CFStringRef
     [gradientView setSolidColor:color1];
   }
 
-  _UIBackdropView *backdropView = MSHookIvar<_UIBackdropView *>(self, "_backdrop");
+  // Remove the darkening view.
   UIView *view = MSHookIvar<UIView *>(self, "_plusDView");
-  backdropView.hidden = YES;
   view.hidden = YES;
 
   UILabel *label = self.titleLabel;
@@ -902,9 +901,7 @@ static void respring(CFNotificationCenterRef center, void *observer, CFStringRef
   CBRGradientView *gradientView = (CBRGradientView *)[self.contentView viewWithTag:VIEW_TAG];
   gradientView.hidden = YES;
 
-  _UIBackdropView *backdropView = MSHookIvar<_UIBackdropView *>(self, "_backdrop");
   UIView *view = MSHookIvar<UIView *>(self, "_plusDView");
-  backdropView.hidden = NO;
   view.hidden = NO;
 
   UILabel *label = self.titleLabel;
