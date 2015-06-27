@@ -109,7 +109,11 @@ static void showTestBanner(CFNotificationCenterRef center, void *observer, CFStr
   bulletin.defaultAction = [%c(BBAction) action];
 
   SBBulletinBannerController *bc = [%c(SBBulletinBannerController) sharedInstance];
-  [bc observer:nil addBulletin:bulletin forFeed:2];
+  if ([bc respondsToSelector:@selector(observer:addBulletin:forFeed:)]) {
+    [bc observer:nil addBulletin:bulletin forFeed:2];
+  } else if ([bc respondsToSelector:@selector(observer:addBulletin:forFeed:playLightsAndSirens:withReply:)]) {
+    [bc observer:nil addBulletin:bulletin forFeed:2 playLightsAndSirens:YES withReply:nil];
+  }
 }
 
 static void respring(CFNotificationCenterRef center, void *observer, CFStringRef name, const void *object, CFDictionaryRef userInfo) {
