@@ -954,6 +954,10 @@ static void respring(CFNotificationCenterRef center, void *observer, CFStringRef
 - (void)updateEntryView {
   %orig;
 
+  if (![CBRPrefsManager sharedInstance].bannersEnabled) {
+    return;
+  }
+
   BOOL useDarkText = [CBRReadabilityManager sharedInstance].shouldUseDarkText;
   UIColor *tintColor = (useDarkText) ? [UIColor darkGrayColor] : [UIColor whiteColor];
 
@@ -970,6 +974,10 @@ static void respring(CFNotificationCenterRef center, void *observer, CFStringRef
 -(void)updateSendButton {
   %orig;
 
+  if (![CBRPrefsManager sharedInstance].bannersEnabled) {
+    return;
+  }
+
   BOOL useDarkText = [CBRReadabilityManager sharedInstance].shouldUseDarkText;
   UIColor *tintColor = (useDarkText) ? [UIColor darkGrayColor] : [UIColor whiteColor]; 
   UIButton *button = self.entryView.sendButton;
@@ -979,6 +987,10 @@ static void respring(CFNotificationCenterRef center, void *observer, CFStringRef
 
 - (void)setupView {
   %orig;
+
+  if (![CBRPrefsManager sharedInstance].bannersEnabled) {
+    return;
+  }
 
   [CBRReadabilityManager sharedInstance].delegate = (id<CBRReadabilityManagerDelegate>)self;
 
