@@ -6,6 +6,7 @@
 #import "CBRColorCache.h"
 #import "CBRGradientView.h"
 #import "CBRPrefsManager.h"
+#import "CBRReadabilityManager.h"
 #import "UIColor+ColorBanners.h"
 
 #define UIColorFromRGBWithAlpha(rgb, a) [UIColor colorWithRed:GETRED(rgb)/255.0 green:GETGREEN(rgb)/255.0 blue:GETBLUE(rgb)/255.0 alpha:a]
@@ -511,6 +512,7 @@ static void respring(CFNotificationCenterRef center, void *observer, CFStringRef
       return;
     }
   }
+  [[CBRReadabilityManager sharedInstance] setShouldUseDarkTextAndSynchronize:isWhite];
 
   [self cbr_setPrefersBlack:@(isWhite)];
 
@@ -946,10 +948,39 @@ static void respring(CFNotificationCenterRef center, void *observer, CFStringRef
 
 // TODO(DavidGoldman): Colorize the text properly.
 %group QuickReply
+%hook CKMessageEntryView
+
+// According to InspectiveC logging, they like to set colors in here.
+- (void)updateEntryView {
+  %orig;
+
+  BOOL useDarkText = [CBRReadabilityManager sharedInstance].shouldUseDarkText;
+  UIColor *tintColor = (useDarkText) ? [UIColor darkGrayColor] : [UIColor whiteColor];
+
+  UIButton *button = self.sendButton;
+  self.audioButton.tintColor = tintColor;
+  [button setTitleColor:tintColor
+               forState:UIControlStateNormal & UIControlStateHighlighted & UIControlStateSelected];
+}
+
+%end
+
 %hook CKInlineReplyViewController
+
+-(void)updateSendButton {
+  %orig;
+
+  BOOL useDarkText = [CBRReadabilityManager sharedInstance].shouldUseDarkText;
+  UIColor *tintColor = (useDarkText) ? [UIColor darkGrayColor] : [UIColor whiteColor]; 
+  UIButton *button = self.entryView.sendButton;
+  [button setTitleColor:tintColor
+               forState:UIControlStateNormal & UIControlStateHighlighted & UIControlStateSelected];
+}
 
 - (void)setupView {
   %orig;
+
+  [CBRReadabilityManager sharedInstance].delegate = (id<CBRReadabilityManagerDelegate>)self;
 
   // To hide the rounded-rect altogether.
   if ([CBRPrefsManager sharedInstance].hideQRRect) {
@@ -957,6 +988,41 @@ static void respring(CFNotificationCenterRef center, void *observer, CFStringRef
     _UITextFieldRoundedRectBackgroundViewNeue *view = MSHookIvar<id>(entryView, "_coverView");
     view.hidden = YES;
   }
+
+  [self cbr_updateReadability:[CBRReadabilityManager sharedInstance].shouldUseDarkText];
+}
+
+%new
+- (void)cbr_updateReadability:(BOOL)useDarkText {
+  UIColor *tintColor = (useDarkText) ? [UIColor darkGrayColor] : [UIColor whiteColor];
+  // (0.780392, 0.780392, 0.8) seems to be the default for the placeholder.
+  UIColor *mildColor = (useDarkText) ? [UIColor grayColor] : [UIColor colorWithRed:0.780392
+                                                                             green:0.780392
+                                                                              blue:0.8
+                                                                             alpha:1];
+
+  UIButton *button = self.entryView.sendButton;
+  [button setTitleColor:tintColor
+               forState:UIControlStateNormal & UIControlStateHighlighted & UIControlStateSelected];
+
+  CKMessageEntryContentView *contentView = self.entryView.contentView;
+  CKMessageEntryRichTextView *textView = contentView.textView;
+  textView.textColor = tintColor;
+  textView.tintColor = tintColor;
+  textView.placeholderLabel.textColor = mildColor;
+
+  UIButton *audioButton = self.entryView.audioButton;
+  audioButton.tintColor = tintColor;
+}
+
+%new
+- (void)managersReadabilityStateDidChange:(CBRReadabilityManager *)manager {
+  [self cbr_updateReadability:manager.shouldUseDarkText];
+}
+
+- (void)dealloc {
+  [CBRReadabilityManager sharedInstance].delegate = nil;
+  %orig;
 }
 
 %end
@@ -989,8 +1055,11 @@ static void respring(CFNotificationCenterRef center, void *observer, CFStringRef
                                     CFSTR(RESPRING),
                                     NULL,
                                     0);
+
+    [CBRReadabilityManager sharedInstance];
   }
   else if ([bundle isEqualToString:@"com.apple.mobilesms.notification"]) {
     %init(QuickReply);
+    [CBRReadabilityManager sharedInstance];
   }
 }

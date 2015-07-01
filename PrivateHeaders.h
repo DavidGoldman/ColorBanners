@@ -1,4 +1,5 @@
 // Test notifications (see PriorityHub and TinyBar).
+@class CBRReadabilityManager;
 
 @interface SBLockScreenViewController : UIViewController
 @end
@@ -259,9 +260,32 @@
 - (void)updateView;
 @end
 
+@interface CKInlineAudioReplyButtonController : NSObject
+@property (nonatomic, retain) UIButton *startButton;
+@property (nonatomic, retain) UIButton *stopButton;
+@end
+
+@interface CKMessageEntryRichTextView : UITextView
+@property(nonatomic, retain) UILabel *placeholderLabel;
+@end
+
+@interface CKMessageEntryContentView : UIView
+@property (nonatomic, retain) CKMessageEntryRichTextView *textView;
+@end
+
 @interface CKMessageEntryView : UIView
+@property(nonatomic, retain) UIView *dividerLine;
+@property(nonatomic, retain) UIButton *audioButton;
+@property(nonatomic, retain) CKMessageEntryContentView *contentView;
+@property(nonatomic, retain) UIButton *sendButton;
+@property(nonatomic, retain) CKInlineAudioReplyButtonController *audioReplyButton;
+@property(nonatomic, retain) UIButton *deleteAudioRecordingButton;
 @end
 
 @interface CKInlineReplyViewController : UIViewController
 @property(nonatomic, retain) CKMessageEntryView * entryView;
+
+// Added by ColorBanners.
+- (void)cbr_updateReadability:(BOOL)useDarkText;
+- (void)managersReadabilityStateDidChange:(CBRReadabilityManager *)manager;
 @end
