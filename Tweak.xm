@@ -1024,7 +1024,7 @@ static void respring(CFNotificationCenterRef center, void *observer, CFStringRef
   textView.tintColor = tintColor;
   // Needed in order to get the UITextView to properly change the cursor color.
   // See http://stackoverflow.com/questions/23725552/uitextview-cursor-color-not-changing-ios-7
-  if([textView isFirstResponder]){
+  if ([textView isFirstResponder]) {
     [textView resignFirstResponder];
     [textView becomeFirstResponder];
   }
