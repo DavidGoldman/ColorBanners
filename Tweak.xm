@@ -1020,7 +1020,14 @@ static void respring(CFNotificationCenterRef center, void *observer, CFStringRef
   CKMessageEntryContentView *contentView = self.entryView.contentView;
   CKMessageEntryRichTextView *textView = contentView.textView;
   textView.textColor = tintColor;
+
   textView.tintColor = tintColor;
+  // Needed in order to get the UITextView to properly change the cursor color.
+  // See http://stackoverflow.com/questions/23725552/uitextview-cursor-color-not-changing-ios-7
+  if([textView isFirstResponder]){
+    [textView resignFirstResponder];
+    [textView becomeFirstResponder];
+  }
   textView.placeholderLabel.textColor = mildColor;
 
   UIButton *audioButton = self.entryView.audioButton;
