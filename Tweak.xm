@@ -121,6 +121,11 @@ static void respring(CFNotificationCenterRef center, void *observer, CFStringRef
   [(SpringBoard *)[UIApplication sharedApplication] _relaunchSpringBoardNow];
 }
 
+static UIColor * getMildColor(BOOL darker) {
+  return (darker) ? [UIColor grayColor] :
+      [UIColor colorWithRed:0.780392 green:0.780392 blue:0.8 alpha:1];
+}
+
 
 %group LockScreen
 %hook SBLockScreenNotificationListView
@@ -963,8 +968,8 @@ static void respring(CFNotificationCenterRef center, void *observer, CFStringRef
 
   UIButton *button = self.sendButton;
   self.audioButton.tintColor = tintColor;
-  [button setTitleColor:tintColor
-               forState:UIControlStateNormal & UIControlStateHighlighted & UIControlStateSelected];
+  [button setTitleColor:tintColor forState:UIControlStateNormal];
+  [button setTitleColor:getMildColor(useDarkText) forState:UIControlStateDisabled];
 }
 
 %end
@@ -981,8 +986,8 @@ static void respring(CFNotificationCenterRef center, void *observer, CFStringRef
   BOOL useDarkText = [CBRReadabilityManager sharedInstance].shouldUseDarkText;
   UIColor *tintColor = (useDarkText) ? [UIColor darkGrayColor] : [UIColor whiteColor]; 
   UIButton *button = self.entryView.sendButton;
-  [button setTitleColor:tintColor
-               forState:UIControlStateNormal & UIControlStateHighlighted & UIControlStateSelected];
+  [button setTitleColor:tintColor forState:UIControlStateNormal];
+  [button setTitleColor:getMildColor(useDarkText) forState:UIControlStateDisabled];
 }
 
 - (void)setupView {
@@ -1008,14 +1013,11 @@ static void respring(CFNotificationCenterRef center, void *observer, CFStringRef
 - (void)cbr_updateReadability:(BOOL)useDarkText {
   UIColor *tintColor = (useDarkText) ? [UIColor darkGrayColor] : [UIColor whiteColor];
   // (0.780392, 0.780392, 0.8) seems to be the default for the placeholder.
-  UIColor *mildColor = (useDarkText) ? [UIColor grayColor] : [UIColor colorWithRed:0.780392
-                                                                             green:0.780392
-                                                                              blue:0.8
-                                                                             alpha:1];
+  UIColor *mildColor = getMildColor(useDarkText);
 
   UIButton *button = self.entryView.sendButton;
-  [button setTitleColor:tintColor
-               forState:UIControlStateNormal & UIControlStateHighlighted & UIControlStateSelected];
+  [button setTitleColor:tintColor forState:UIControlStateNormal];
+  [button setTitleColor:mildColor forState:UIControlStateDisabled];
 
   CKMessageEntryContentView *contentView = self.entryView.contentView;
   CKMessageEntryRichTextView *textView = contentView.textView;
