@@ -61,7 +61,7 @@ static void showTestLockScreenNotification(CFNotificationCenterRef center, void 
   dispatch_after(dispatch_time(DISPATCH_TIME_NOW, 0.7 * NSEC_PER_SEC), dispatch_get_main_queue(), ^{
     BBBulletin *bulletin = [[[%c(BBBulletinRequest) alloc] init] autorelease];
     bulletin.title = @"ColorBanners";
-    bulletin.subtitle = @"This is a test notification!";
+    bulletin.message = @"This is a test notification!";
     bulletin.sectionID = [CBRAppList randomAppIdentifier];
     bulletin.bulletinID = @"com.golddavid.colorbanners";
 
