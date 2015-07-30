@@ -34,7 +34,6 @@ static void notify(BOOL useDarkText) {
 - (instancetype)init {
   self = [super init];
   if (self) {
-    [self refresh];
     CFNotificationCenterAddObserver(CFNotificationCenterGetDarwinNotifyCenter(),
                                     self,
                                     &callBack,
@@ -47,6 +46,7 @@ static void notify(BOOL useDarkText) {
                                     kUseLightTextNotification,
                                     NULL,
                                     0);
+    [self refresh];
   }
   return self;
 }
