@@ -26,6 +26,8 @@
 @property(nonatomic, assign, getter=shouldRemoveLSBlur) BOOL removeLSBlur;
 @property(nonatomic, assign, getter=shouldShowSeparators) BOOL showSeparators;
 @property(nonatomic, assign, getter=shouldDisableDimming) BOOL disableDimming;
+@property(nonatomic, assign, getter=shouldColorDismissButton) BOOL colorDismissButton;
+
 @property(nonatomic, assign) BOOL prefersWhiteText;
 
 @property(nonatomic, assign) BOOL wantsDeepBannerAnalyzing;

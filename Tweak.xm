@@ -375,8 +375,10 @@ static UIColor * getMildColor(BOOL darker) {
 
 %new
 - (void)colorize:(int)color {
-  CGFloat alpha = [CBRPrefsManager sharedInstance].lsAlpha * 3 / 4;
-  self.backgroundColor = UIColorFromRGBWithAlpha(color, alpha);
+  if ([CBRPrefsManager sharedInstance].colorDismissButton) {
+    CGFloat alpha = [CBRPrefsManager sharedInstance].lsAlpha * 3 / 4;
+    self.backgroundColor = UIColorFromRGBWithAlpha(color, alpha);
+  }
 
   if (![CBRPrefsManager sharedInstance].showSeparators) {
     self.drawsBottomSeparator = NO;

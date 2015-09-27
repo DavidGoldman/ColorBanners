@@ -87,6 +87,14 @@
     },
     {
       cell = PSSwitchCell;
+      label = "Color Dismiss Button";
+      key = "ColorDismissButton";
+      default = 1;
+      defaults = "com.golddavid.colorbanners";
+      PostNotification = "com.golddavid.colorbanners/reloadprefs";
+    },
+    {
+      cell = PSSwitchCell;
       label = "Remove Blur";
       key = "RemoveBlur";
       default = 0;
