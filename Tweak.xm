@@ -1,5 +1,7 @@
 #import "ColorBadges.h"
 
+#import <objc/runtime.h>
+
 #import "Defines.h"
 #import "PrivateHeaders.h"
 #import "CBRAppList.h"
@@ -635,6 +637,15 @@ static void respring(CFNotificationCenterRef center, void *observer, CFStringRef
   MSHookIvar<NSAttributedString *>(self, "_primaryTextAttributedStringComponent") = copyAttributedStringWithColor(s, color);
   [s release];
 
+  // Subtitle appears to have been added in 8.3. Still need to see where this is actually used.
+  // It appears to be used in Group Chats, but I'm not sure.
+  Ivar ivar = class_getInstanceVariable(object_getClass(self), "_subtitleTextAttributedString");
+  if (ivar) {
+    s = MSHookIvar<NSAttributedString *>(self, "_subtitleTextAttributedString");
+    MSHookIvar<NSAttributedString *>(self, "_subtitleTextAttributedString") = copyAttributedStringWithColor(s, color);
+    [s release];
+  }
+
   // TinyBar support (deferred colorizing).
   if ([self respondsToSelector:@selector(tb_titleLabel)]) {
     [self tb_titleLabel].textColor = color;
@@ -1125,6 +1136,11 @@ static UIColor * getMildColor(BOOL darker) {
 %hook NCNotificationActionTextInputViewController
 %new
 - (void)cbr_colorize:(int)color alpha:(CGFloat)alpha preferringBlack:(BOOL)wantsBlack {
+  // TODO: Make sure this means what I think it means.
+  if (self.modal) {
+    return;
+  }
+
   // To hide the rounded-rect altogether.
   if ([CBRPrefsManager sharedInstance].hideQRRect) {
     self.coverView.hidden = YES;
