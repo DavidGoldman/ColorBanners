@@ -6,6 +6,7 @@ ColorBannersPrefs_INSTALL_PATH = /Library/PreferenceBundles
 ColorBannersPrefs_LIBRARIES = colorpicker
 ColorBannersPrefs_FRAMEWORKS = UIKit
 ColorBannersPrefs_PRIVATE_FRAMEWORKS = Preferences
+ColorBannersPrefs_LDFLAGS += -Wl,-segalign,4000
 
 include $(THEOS_MAKE_PATH)/bundle.mk
 

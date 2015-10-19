@@ -121,12 +121,6 @@ static void respring(CFNotificationCenterRef center, void *observer, CFStringRef
   [(SpringBoard *)[UIApplication sharedApplication] _relaunchSpringBoardNow];
 }
 
-static UIColor * getMildColor(BOOL darker) {
-  return (darker) ? [UIColor grayColor] :
-      [UIColor colorWithRed:0.780392 green:0.780392 blue:0.8 alpha:1];
-}
-
-
 %group LockScreen
 %hook SBLockScreenNotificationListView
 
@@ -796,32 +790,51 @@ static UIColor * getMildColor(BOOL darker) {
 %end
 %end
 
-%group NotificationCenter
+%group iOS9_NotificationCenter_Widgets
+%hook SBWidgetSectionInfo
 
+- (void)populateReusableView:(UIView *)view {
+  %orig;
 
-// TODO(DavidGoldman): Finish this (coloring NC cells).
-// %hook SBNotificationsAllModeBulletinInfo
+  if ([view isKindOfClass:%c(SBNotificationCenterHeaderView)]) {
+    SBNotificationCenterHeaderView *headerView = (SBNotificationCenterHeaderView *)view;
+    CBRPrefsManager *prefsManager = [CBRPrefsManager sharedInstance];
 
-// - (void)populateReusableView:(UIView *)view {
-//   if (![view isKindOfClass:%c(SBNotificationsBulletinCell)]) {
-//     %orig;
-//     return;
-//   }
+    if (!prefsManager.ncEnabled) {
+      [headerView cbr_setColor:nil];
+      return;
+    }
 
-//   SBNotificationsBulletinCell *cell = (SBNotificationsBulletinCell *)view;
+    int color;
 
-//   %orig;
+    if (prefsManager.ncUseConstantColor) {
+      color = prefsManager.ncBackgroundColor;
+    } else {
+      SBWidgetRowInfo *widgetRowInfo = self.widgetRowInfo;
+      NSString *identifier = [widgetRowInfo identifier];
+      UIImage *image = [widgetRowInfo icon];
 
-//   SBNotificationCenterSectionInfo *sectionInfo = self.sectionInfo;
-//   NSString *identifier = sectionInfo.listSectionIdentifier;
-//   UIImage *image = sectionInfo.representedListSection.iconImage;
+      if (!identifier) {
+        CBRLOG(@"WARNING: No identifier for %@", self);
+      }
 
-//   int color = [[CBRColorCache sharedInstance] colorForIdentifier:identifier image:image];
-//   cell.backgroundColor = UIColorFromRGBWithAlpha(color, 0.7);
-// }
+      if (!image) {
+        [headerView cbr_setColor:nil];
+        return;
+      }
 
-// %end
+      color = [[CBRColorCache sharedInstance] colorForIdentifier:identifier image:image];
+    }
 
+    [headerView cbr_setColor:@(color)];
+    [headerView cbr_colorizeIfNeeded];
+  }
+}
+
+%end
+%end
+
+%group NotificationCenter_BB
 %hook SBNotificationCenterSectionInfo
 
 - (void)populateReusableView:(UIView *)view {
@@ -841,8 +854,18 @@ static UIColor * getMildColor(BOOL darker) {
     if (prefsManager.ncUseConstantColor) {
       color = prefsManager.ncBackgroundColor;
     } else {
-      NSString *identifier = self.listSectionIdentifier;
-      UIImage *image = self.representedListSection.iconImage;
+      NSString *identifier = nil;
+      if ([self respondsToSelector:@selector(listSectionIdentifier)]) {
+        identifier = [self listSectionIdentifier];
+      }
+      UIImage *image = nil;
+      if ([self respondsToSelector:@selector(representedListSection)]) {
+        image = [self representedListSection].iconImage;
+      }
+
+      if (!identifier) {
+        CBRLOG(@"WARNING: No identifier for %@", self);
+      }
 
       if (!image) {
         [headerView cbr_setColor:nil];
@@ -853,16 +876,35 @@ static UIColor * getMildColor(BOOL darker) {
     }
 
     [headerView cbr_setColor:@(color)];
+    // Need to manually colorize on iOS 9.
+    if (IS_IOS9_OR_NEWER) {
+      [headerView cbr_colorizeIfNeeded];
+    }
   }
 }
 
 %end
+%end
+
+%group NotificationCenter
 
 %hook SBNotificationCenterHeaderView
 
 - (void)setGraphicsQuality:(NSInteger)quality {
   %orig;
 
+  [self cbr_colorizeIfNeeded];
+}
+
+- (void)layoutSubviews {
+  %orig;
+
+  CBRGradientView *gradientView = (CBRGradientView *)[self.contentView viewWithTag:VIEW_TAG];
+  gradientView.frame = self.contentView.bounds;
+}
+
+%new
+- (void)cbr_colorizeIfNeeded {
   NSNumber *color = [self cbr_color];
   NSNumber *activeColor = [self cbr_activeColor];
 
@@ -875,13 +917,6 @@ static UIColor * getMildColor(BOOL darker) {
   } else {
     [self cbr_revert];
   }
-}
-
-- (void)layoutSubviews {
-  %orig;
-
-  CBRGradientView *gradientView = (CBRGradientView *)[self.contentView viewWithTag:VIEW_TAG];
-  gradientView.frame = self.contentView.bounds;
 }
 
 %new
@@ -953,7 +988,15 @@ static UIColor * getMildColor(BOOL darker) {
 %end
 %end
 
-// TODO(DavidGoldman): Colorize the text properly.
+static UIColor * getNormalColor(BOOL darker) {
+  return (darker) ? [UIColor darkGrayColor] : [UIColor whiteColor];
+}
+
+static UIColor * getMildColor(BOOL darker) {
+  return (darker) ? [UIColor grayColor] :
+      [UIColor colorWithRed:0.780392 green:0.780392 blue:0.8 alpha:1];
+}
+
 %group QuickReply
 %hook CKMessageEntryView
 
@@ -966,10 +1009,10 @@ static UIColor * getMildColor(BOOL darker) {
   }
 
   BOOL useDarkText = [CBRReadabilityManager sharedInstance].shouldUseDarkText;
-  UIColor *tintColor = (useDarkText) ? [UIColor darkGrayColor] : [UIColor whiteColor];
+  UIColor *tintColor = getNormalColor(useDarkText);
 
-  UIButton *button = self.sendButton;
   self.audioButton.tintColor = tintColor;
+  UIButton *button = self.sendButton;
   [button setTitleColor:tintColor forState:UIControlStateNormal];
   [button setTitleColor:getMildColor(useDarkText) forState:UIControlStateDisabled];
 }
@@ -978,7 +1021,7 @@ static UIColor * getMildColor(BOOL darker) {
 
 %hook CKInlineReplyViewController
 
--(void)updateSendButton {
+- (void)updateSendButton {
   %orig;
 
   if (![CBRPrefsManager sharedInstance].bannersEnabled) {
@@ -986,9 +1029,8 @@ static UIColor * getMildColor(BOOL darker) {
   }
 
   BOOL useDarkText = [CBRReadabilityManager sharedInstance].shouldUseDarkText;
-  UIColor *tintColor = (useDarkText) ? [UIColor darkGrayColor] : [UIColor whiteColor]; 
   UIButton *button = self.entryView.sendButton;
-  [button setTitleColor:tintColor forState:UIControlStateNormal];
+  [button setTitleColor:getNormalColor(useDarkText) forState:UIControlStateNormal];
   [button setTitleColor:getMildColor(useDarkText) forState:UIControlStateDisabled];
 }
 
@@ -1013,8 +1055,7 @@ static UIColor * getMildColor(BOOL darker) {
 
 %new
 - (void)cbr_updateReadability:(BOOL)useDarkText {
-  UIColor *tintColor = (useDarkText) ? [UIColor darkGrayColor] : [UIColor whiteColor];
-  // (0.780392, 0.780392, 0.8) seems to be the default for the placeholder.
+  UIColor *tintColor = getNormalColor(useDarkText);
   UIColor *mildColor = getMildColor(useDarkText);
 
   UIButton *button = self.entryView.sendButton;
@@ -1059,6 +1100,15 @@ static UIColor * getMildColor(BOOL darker) {
     %init(Banners);
     %init(NotificationCenter);
     %init(RemoveUnderlay);
+
+    // iOS 9 Notification Center stuff.
+    BOOL iOS9 = IS_IOS9_OR_NEWER;
+    Class SectionInfo_Class = %c(SBNotificationCenterSectionInfo);
+    if (iOS9) {
+      %init(iOS9_NotificationCenter_Widgets);
+      SectionInfo_Class = %c(SBBBSectionInfo);
+    }
+    %init(NotificationCenter_BB, SBNotificationCenterSectionInfo=SectionInfo_Class);
 
     CFNotificationCenterAddObserver(CFNotificationCenterGetDarwinNotifyCenter(),
                                     NULL,

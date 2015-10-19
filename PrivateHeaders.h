@@ -220,6 +220,10 @@
 @end
 
 @interface SBNotificationCenterSectionInfo : NSObject
+@property(readonly, assign, nonatomic) NSString *identifier;
+@property(readonly, retain, nonatomic) id representedObject;
+@property(retain, nonatomic) UIImage *icon;
+// iOS 8.
 @property(readonly, assign, nonatomic) NSString *listSectionIdentifier;
 @property(readonly, assign, nonatomic) SBBulletinListSection *representedListSection;
 @end
@@ -232,6 +236,7 @@
 - (NSNumber *)cbr_activeColor;
 - (void)cbr_setActiveColor:(NSNumber *)color;
 
+- (void)cbr_colorizeIfNeeded;
 - (void)cbr_colorize:(int)color;
 - (void)cbr_revert;
 @end
@@ -250,6 +255,18 @@
 @end
 
 @interface SBNotificationsBulletinCell : UIView
+@end
+
+#pragma mark - iOS 9 Notification Center
+
+@interface SBWidgetRowInfo : NSObject
+- (id)icon;
+- (id)identifier;
+@end
+
+@interface SBWidgetSectionInfo : NSObject
+@property(copy, nonatomic) NSString *identifier;
+@property(retain, nonatomic) SBWidgetRowInfo *widgetRowInfo;
 @end
 
 #pragma mark - QuickReply
