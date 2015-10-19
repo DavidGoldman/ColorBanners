@@ -146,7 +146,8 @@
 - (void)colorizeBackgroundForColor:(int)color alpha:(CGFloat)alpha preferringBlack:(BOOL)wantsBlack;
 - (void)colorizeTextForColor:(int)color alpha:(CGFloat)alpha preferringBlack:(BOOL)wantsBlack;
 - (void)colorizeGrabberForColor:(int)color alpha:(CGFloat)alpha preferringBlack:(BOOL)wantsBlack;
-- (void)colorizePullDownForColor:(int)color alpha:(CGFloat)alpha preferringBlack:(BOOL)wantsBlack;
+- (void)colorizePullDown:(UIView *)v forColor:(int)color alpha:(CGFloat)alpha preferringBlack:(BOOL)wantsBlack;
+- (void)recolorizePullDown:(UIView *)pullDownView;
 - (void)colorize:(int)color withBackground:(int)bg force:(BOOL)force;
 - (void)colorize:(int)color;
 
@@ -306,3 +307,20 @@
 - (void)cbr_updateReadability:(BOOL)useDarkText;
 - (void)managersReadabilityStateDidChange:(CBRReadabilityManager *)manager;
 @end
+
+#pragma mark - iOS 9 QuickReply
+
+@interface NCNotificationActionTextInputViewController : UIViewController
+@property (nonatomic, retain) _UITextFieldRoundedRectBackgroundViewNeue *coverView;
+@property (nonatomic, retain) UIButton *sendButton;
+@property (nonatomic, retain) UITextView *textEntryView;
+@property (getter=isModal, nonatomic) BOOL modal;
+- (void)cbr_colorize:(int)color alpha:(CGFloat)alpha preferringBlack:(BOOL)wantsBlack;
+@end
+
+#pragma mark - Private
+
+@interface UIView(UIViewController_Internals)
+- (id)_viewDelegate;
+@end
+

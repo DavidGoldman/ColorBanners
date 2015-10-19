@@ -491,12 +491,22 @@ static void respring(CFNotificationCenterRef center, void *observer, CFStringRef
 }
 
 %new
-- (void)colorizePullDownForColor:(int)color alpha:(CGFloat)alpha preferringBlack:(BOOL)wantsBlack {
+- (void)colorizePullDown:(UIView *)pullDownView forColor:(int)color
+                   alpha:(CGFloat)alpha  preferringBlack:(BOOL)wantsBlack {
   // Colorize the buttons.
-  id pullDownView = self.pullDownView;
   if ([pullDownView isKindOfClass:%c(SBBannerButtonView)]) {
     SBBannerButtonView *buttonView = (SBBannerButtonView *)pullDownView;
     [buttonView colorizeWithColor:color alpha:alpha preferringBlack:wantsBlack];
+  }
+
+  // Colorize Text View.
+  if (IS_IOS9_OR_NEWER) {
+    id viewController = [pullDownView _viewDelegate];
+    if ([viewController isKindOfClass:%c(NCNotificationActionTextInputViewController)]) {
+      [(NCNotificationActionTextInputViewController *)viewController cbr_colorize:color
+                                                                            alpha:alpha
+                                                                  preferringBlack:wantsBlack];
+    }
   }
 }
 
@@ -520,7 +530,19 @@ static void respring(CFNotificationCenterRef center, void *observer, CFStringRef
   [self colorizeBackgroundForColor:color alpha:alpha preferringBlack:isWhite];
   [self colorizeTextForColor:color alpha:alpha preferringBlack:isWhite];
   [self colorizeGrabberForColor:color alpha:alpha preferringBlack:isWhite];
-  [self colorizePullDownForColor:color alpha:alpha preferringBlack:isWhite];
+  [self colorizePullDown:self.pullDownView forColor:color alpha:alpha preferringBlack:isWhite];
+}
+
+%new
+- (void)recolorizePullDown:(UIView *)pullDownView {
+  NSNumber *curColor = [self cbr_color];
+  NSNumber *curPrefersBlack = [self cbr_prefersBlack];
+  if (curColor && curPrefersBlack) {
+    [self colorizePullDown:pullDownView
+                  forColor:[curColor intValue]
+                     alpha:[CBRPrefsManager sharedInstance].bannerAlpha
+           preferringBlack:[curPrefersBlack boolValue]];
+  }
 }
 
 %new
@@ -997,7 +1019,7 @@ static UIColor * getMildColor(BOOL darker) {
       [UIColor colorWithRed:0.780392 green:0.780392 blue:0.8 alpha:1];
 }
 
-%group QuickReply
+%group Messages_QuickReply
 %hook CKMessageEntryView
 
 // According to InspectiveC logging, they like to set colors in here.
@@ -1092,6 +1114,41 @@ static UIColor * getMildColor(BOOL darker) {
 %end
 %end
 
+%group iOS9_QuickReply
+%hook SBBannerContextView
+- (void)replacePullDownViewWithView:(UIView *)view animated:(BOOL)animated {
+  [self recolorizePullDown:view];
+
+  %orig;
+}
+%end
+%hook NCNotificationActionTextInputViewController
+%new
+- (void)cbr_colorize:(int)color alpha:(CGFloat)alpha preferringBlack:(BOOL)wantsBlack {
+  // To hide the rounded-rect altogether.
+  if ([CBRPrefsManager sharedInstance].hideQRRect) {
+    self.coverView.hidden = YES;
+  }
+
+  UIColor *tintColor = getNormalColor(wantsBlack);
+
+  UIButton *sendButton = self.sendButton;
+  [sendButton setTitleColor:tintColor forState:UIControlStateNormal];
+  [sendButton setTitleColor:getMildColor(wantsBlack) forState:UIControlStateDisabled];
+
+  UITextView *textView = self.textEntryView;
+  textView.textColor = tintColor;
+  textView.tintColor = tintColor;
+  // Needed in order to get the UITextView to properly change the cursor color.
+  // See http://stackoverflow.com/questions/23725552/uitextview-cursor-color-not-changing-ios-7
+  if ([textView isFirstResponder]) {
+    [textView resignFirstResponder];
+    [textView becomeFirstResponder];
+  }
+}
+%end
+%end
+
 %ctor {
   NSString *bundle = [NSBundle mainBundle].bundleIdentifier;
 
@@ -1129,10 +1186,15 @@ static UIColor * getMildColor(BOOL darker) {
                                     NULL,
                                     0);
 
+    // iOS 9 has some Quick Reply classes loaded in SpringBoard.
+    if (iOS9) {
+      %init(iOS9_QuickReply);
+    }
+
     [CBRReadabilityManager sharedInstance];
   }
   else if ([bundle isEqualToString:@"com.apple.mobilesms.notification"]) {
-    %init(QuickReply);
+    %init(Messages_QuickReply);
     [CBRReadabilityManager sharedInstance];
   }
 }
