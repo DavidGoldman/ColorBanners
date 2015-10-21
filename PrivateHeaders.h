@@ -24,10 +24,16 @@
 @property(copy, nonatomic) BBAction *defaultAction;
 @property(retain, nonatomic) NSDate *date;
 @property(copy, nonatomic) NSString *bulletinID;
+@property(assign, nonatomic) BOOL clearable;
 @end
 
 @interface BBBulletinRequest : BBBulletin
 @end
+
+@interface BBServer : NSObject
+- (void)publishBulletin:(BBBulletin *)bulletin destinations:(NSUInteger)dests alwaysToLockScreen:(BOOL)lock;
+@end
+
 
 @interface SBLockScreenNotificationListController : NSObject
 - (void)observer:(id)arg1 addBulletin:(id)arg2 forFeed:(NSUInteger)arg3 playLightsAndSirens:(BOOL)arg4 withReply:(id)arg5;

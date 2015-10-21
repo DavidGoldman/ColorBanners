@@ -55,6 +55,9 @@ static NSAttributedString * copyAttributedStringWithColor(NSAttributedString *st
   return copy;
 }
 
+// Used for lockscreen notifications.
+static id bbServer = nil;
+
 // TODO(DavidGoldman): Figure out how to use BBAction so that it will be dismissed properly.
 // Thanks to PriorityHub.
 static void showTestLockScreenNotification(CFNotificationCenterRef center, void *observer, CFStringRef name, const void *object, CFDictionaryRef userInfo) {
@@ -66,25 +69,14 @@ static void showTestLockScreenNotification(CFNotificationCenterRef center, void 
     bulletin.subtitle = @"This is a test notification!";
     bulletin.sectionID = [CBRAppList randomAppIdentifier];
     bulletin.bulletinID = @"com.golddavid.colorbanners";
+    bulletin.date = [NSDate date];
+    bulletin.clearable = YES;
 
     NSURL *url= [NSURL URLWithString:@"prefs:root=ColorBanners"];
     bulletin.defaultAction = [%c(BBAction) actionWithLaunchURL:url];
 
-    SBLockScreenManager *manager = [%c(SBLockScreenManager) sharedInstance];
-    SBLockScreenViewController *vc = manager.lockScreenViewController;
-    SBLockScreenNotificationListController *lsNotificationListController = MSHookIvar<id>(vc, "_notificationController");
-
-    if (lsNotificationListController) {
-      id observer = MSHookIvar<id>(lsNotificationListController, "_observer");
-
-      // iOS 8.
-      if ([lsNotificationListController respondsToSelector:@selector(observer:addBulletin:forFeed:playLightsAndSirens:withReply:)]) {
-        [lsNotificationListController observer:observer
-                                   addBulletin:bulletin
-                                       forFeed:2
-                           playLightsAndSirens:NO
-                                     withReply:nil];
-      }
+    if ([bbServer respondsToSelector:@selector(publishBulletin:destinations:alwaysToLockScreen:)]) {
+      [bbServer publishBulletin:bulletin destinations:4 alwaysToLockScreen:YES];
     }
   });
 }
@@ -122,6 +114,22 @@ static void showTestBanner(CFNotificationCenterRef center, void *observer, CFStr
 static void respring(CFNotificationCenterRef center, void *observer, CFStringRef name, const void *object, CFDictionaryRef userInfo) {
   [(SpringBoard *)[UIApplication sharedApplication] _relaunchSpringBoardNow];
 }
+
+%group TestNotifications
+%hook BBServer
+- (id)init {
+  id me = %orig;
+  bbServer = me;
+  return me;
+}
+- (void)dealloc {
+  if (bbServer == self) {
+    bbServer = nil;
+  }
+  %orig;
+}
+%end
+%end
 
 %group LockScreen
 %hook SBLockScreenNotificationListView
@@ -1169,6 +1177,7 @@ static UIColor * getMildColor(BOOL darker) {
   NSString *bundle = [NSBundle mainBundle].bundleIdentifier;
 
   if ([bundle isEqualToString:@"com.apple.springboard"]) {
+    %init(TestNotifications);
     %init(LockScreen);
     %init(Banners);
     %init(NotificationCenter);
