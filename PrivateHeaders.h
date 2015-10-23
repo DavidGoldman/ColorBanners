@@ -23,8 +23,11 @@
 @property(copy, nonatomic) NSString *message;
 @property(copy, nonatomic) BBAction *defaultAction;
 @property(retain, nonatomic) NSDate *date;
+@property(retain, nonatomic) NSDate *publicationDate;
+@property(retain, nonatomic) NSDate *lastInterruptDate;
 @property(copy, nonatomic) NSString *bulletinID;
 @property(assign, nonatomic) BOOL clearable;
+@property(assign, nonatomic) BOOL showsMessagePreview;
 @end
 
 @interface BBBulletinRequest : BBBulletin
@@ -304,9 +307,14 @@
 @property(nonatomic, retain) UIButton *sendButton;
 @property(nonatomic, retain) CKInlineAudioReplyButtonController *audioReplyButton;
 @property(nonatomic, retain) UIButton *deleteAudioRecordingButton;
+
+// Added by ColorBanners.
+- (void)cbr_setModal:(BOOL)modal;
+- (BOOL)cbr_isModal;
 @end
 
 @interface CKInlineReplyViewController : UIViewController
+@property(nonatomic, getter=isModal) BOOL modal;
 @property(nonatomic, retain) CKMessageEntryView * entryView;
 
 // Added by ColorBanners.

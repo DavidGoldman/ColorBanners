@@ -69,8 +69,12 @@ static void showTestLockScreenNotification(CFNotificationCenterRef center, void 
     bulletin.subtitle = @"This is a test notification!";
     bulletin.sectionID = [CBRAppList randomAppIdentifier];
     bulletin.bulletinID = @"com.golddavid.colorbanners";
-    bulletin.date = [NSDate date];
     bulletin.clearable = YES;
+    bulletin.showsMessagePreview = YES;
+    NSDate *date = [NSDate date];
+    bulletin.date = date;
+    bulletin.publicationDate = date;
+    bulletin.lastInterruptDate = date;
 
     NSURL *url= [NSURL URLWithString:@"prefs:root=ColorBanners"];
     bulletin.defaultAction = [%c(BBAction) actionWithLaunchURL:url];
@@ -1041,11 +1045,22 @@ static UIColor * getMildColor(BOOL darker) {
 %group Messages_QuickReply
 %hook CKMessageEntryView
 
+%new
+- (void)cbr_setModal:(BOOL)modal {
+  objc_setAssociatedObject(self, @selector(cbr_isModal), @(modal), OBJC_ASSOCIATION_RETAIN_NONATOMIC);
+}
+
+%new
+- (BOOL)cbr_isModal {
+  NSNumber *value = objc_getAssociatedObject(self, @selector(cbr_isModal));
+  return [value boolValue];
+}
+
 // According to InspectiveC logging, they like to set colors in here.
 - (void)updateEntryView {
   %orig;
 
-  if (![CBRPrefsManager sharedInstance].bannersEnabled) {
+  if ([self cbr_isModal] || ![CBRPrefsManager sharedInstance].bannersEnabled) {
     return;
   }
 
@@ -1065,7 +1080,7 @@ static UIColor * getMildColor(BOOL darker) {
 - (void)updateSendButton {
   %orig;
 
-  if (![CBRPrefsManager sharedInstance].bannersEnabled) {
+  if (self.modal || ![CBRPrefsManager sharedInstance].bannersEnabled) {
     return;
   }
 
@@ -1078,7 +1093,9 @@ static UIColor * getMildColor(BOOL darker) {
 - (void)setupView {
   %orig;
 
-  if (![CBRPrefsManager sharedInstance].bannersEnabled) {
+  BOOL modal = self.modal;
+  [self.entryView cbr_setModal:modal];
+  if (modal || ![CBRPrefsManager sharedInstance].bannersEnabled) {
     return;
   }
 
@@ -1096,6 +1113,9 @@ static UIColor * getMildColor(BOOL darker) {
 
 %new
 - (void)cbr_updateReadability:(BOOL)useDarkText {
+  if (self.modal) {
+    return;
+  }
   UIColor *tintColor = getNormalColor(useDarkText);
   UIColor *mildColor = getMildColor(useDarkText);
 
