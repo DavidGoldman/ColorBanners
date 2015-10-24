@@ -161,8 +161,14 @@ static void respring(CFNotificationCenterRef center, void *observer, CFStringRef
         return;
       }
 
-      NSString *identifier = item.activeBulletin.sectionID;
-      color = [[CBRColorCache sharedInstance] colorForIdentifier:identifier image:image];
+      // Don't cache bulletins from Calendar for Lockscreen.
+      NSString *bulletinID = item.activeBulletin.bulletinID;
+      if ([bulletinID hasPrefix:@"LockScreenCalendar"]) {
+        color = [[CBRColorCache sharedInstance] colorForImage:image];
+      } else {
+        color = [[CBRColorCache sharedInstance] colorForIdentifier:item.activeBulletin.sectionID
+                                                             image:image];
+      }
     }
 
     [cell colorize:color];

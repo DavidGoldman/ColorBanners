@@ -18,8 +18,8 @@ static void proxy_init() {
       bucket_Class = objc_getClass("CBRBucket");
       cb_Class = objc_getClass("ColorBadges");
 
-      NSString *path = @"/Library/MobileSubstrate/DynamicLibraries/PrettierBanners.dylib";
-      prettierBanners_isInstalled = [[NSFileManager defaultManager] fileExistsAtPath:path];
+      NSString *pBPath = @"/Library/MobileSubstrate/DynamicLibraries/PrettierBanners.dylib";
+      prettierBanners_isInstalled = [[NSFileManager defaultManager] fileExistsAtPath:pBPath];
   });
 }
 
@@ -85,6 +85,13 @@ static BOOL proxy_isDarkColor(int color) {
     [_cache setObject:@(color) forKey:identifier];
     return color;
   }
+}
+
+- (int)colorForImage:(UIImage *)image {
+  if (!image) {
+    CBRLOG("No image given when requesting analysis!");
+  }
+  return proxy_colorForImage(image);
 }
 
 - (void)dealloc {
