@@ -1,7 +1,7 @@
 export ARCHS = armv7 arm64
-export TARGET = iphone:8.4:8.4
+export TARGET = iphone:9.2:9.2
 export THEOS_PACKAGE_DIR_NAME = debs
-PACKAGE_VERSION = $(THEOS_PACKAGE_BASE_VERSION)~beta$(VERSION.INC_BUILD_NUMBER)
+# PACKAGE_VERSION = $(THEOS_PACKAGE_BASE_VERSION)~beta$(VERSION.INC_BUILD_NUMBER)
 include theos/makefiles/common.mk
 
 TWEAK_NAME = ColorBanners

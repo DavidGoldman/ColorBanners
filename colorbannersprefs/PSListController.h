@@ -34,7 +34,7 @@
     NSString *_offsetItemName;
     BOOL _popupIsDismissing;
     BOOL _popupIsModal;
-    UIPopoverController *_popupStylePopoverController;
+    // UIPopoverController *_popupStylePopoverController;
     BOOL _popupStylePopoverShouldRePresent;
     NSMutableArray *_prequeuedReusablePSTableCells;
     BOOL _reusesCells;

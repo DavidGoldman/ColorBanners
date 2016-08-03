@@ -34,6 +34,7 @@
 @end
 
 @interface BBServer : NSObject
+- (id)_sectionInfoForSectionID:(NSString *)sectionID effective:(BOOL)effective;
 - (void)publishBulletin:(BBBulletin *)bulletin destinations:(NSUInteger)dests alwaysToLockScreen:(BOOL)lock;
 @end
 
@@ -60,6 +61,11 @@
 
 @interface SpringBoard : UIApplication
 - (void)_relaunchSpringBoardNow;
+@end
+@interface FBSystemService : NSObject
++ (id)sharedInstance;
+
+- (void)exitAndRelaunch:(BOOL)unknown;
 @end
 
 // Lockscreen Notifications.

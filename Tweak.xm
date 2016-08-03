@@ -14,6 +14,7 @@
 #define UIColorFromRGBWithAlpha(rgb, a) [UIColor colorWithRed:GETRED(rgb)/255.0 green:GETGREEN(rgb)/255.0 blue:GETBLUE(rgb)/255.0 alpha:a]
 #define VIEW_TAG 0xDAE1DEE
 #define DARK_GRAY 0x555555
+#define MAX_RETRIES 15
 
 static BOOL isWhitish(int rgb) {
   return ![CBRColorCache isDarkColor:rgb];
@@ -64,10 +65,18 @@ static void showTestLockScreenNotification(CFNotificationCenterRef center, void 
   [[%c(SBLockScreenManager) sharedInstance] lockUIFromSource:1 withOptions:nil];
 
   dispatch_after(dispatch_time(DISPATCH_TIME_NOW, 0.7 * NSEC_PER_SEC), dispatch_get_main_queue(), ^{
+    NSString *sectionID = [CBRAppList randomAppIdentifier];
+    NSUInteger count = 0;
+    if ([bbServer respondsToSelector:@selector(_sectionInfoForSectionID:effective:)]) {
+      while (![bbServer _sectionInfoForSectionID:sectionID effective:YES] && count < MAX_RETRIES) {
+        sectionID = [CBRAppList randomAppIdentifier];
+      }
+    }
+
     BBBulletin *bulletin = [[[%c(BBBulletinRequest) alloc] init] autorelease];
     bulletin.title = @"ColorBanners";
     bulletin.subtitle = @"This is a test notification!";
-    bulletin.sectionID = [CBRAppList randomAppIdentifier];
+    bulletin.sectionID = sectionID;
     bulletin.bulletinID = @"com.golddavid.colorbanners";
     bulletin.clearable = YES;
     bulletin.showsMessagePreview = YES;
@@ -116,7 +125,12 @@ static void showTestBanner(CFNotificationCenterRef center, void *observer, CFStr
 }
 
 static void respring(CFNotificationCenterRef center, void *observer, CFStringRef name, const void *object, CFDictionaryRef userInfo) {
-  [(SpringBoard *)[UIApplication sharedApplication] _relaunchSpringBoardNow];
+  SpringBoard *sb = (SpringBoard *)[UIApplication sharedApplication];
+  if ([sb respondsToSelector:@selector(_relaunchSpringBoardNow)]) {
+    [sb _relaunchSpringBoardNow];
+  } else if (%c(FBSystemService)) {
+    [[%c(FBSystemService) sharedInstance] exitAndRelaunch:YES];
+  }
 }
 
 %group TestNotifications
@@ -704,6 +718,18 @@ static void respring(CFNotificationCenterRef center, void *observer, CFStringRef
     NSAttributedString *newStr = copyAttributedStringWithColor(str, secondaryTextColor);
     [str release];
     return newStr;
+  }
+  return str;
+}
+
+// TinyBar support (iOS 9.3+).
+- (id)_attributedStringForSecondaryText:(id)secondaryText italicized:(BOOL)italicized {
+  NSAttributedString *str = %orig;
+  UIColor *secondaryTextColor = [self secondaryTextColor];
+
+  if (secondaryTextColor) {
+    NSAttributedString *newStr = copyAttributedStringWithColor(str, secondaryTextColor);
+    return [newStr autorelease];
   }
   return str;
 }
