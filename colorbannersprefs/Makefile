@@ -1,4 +1,4 @@
-include theos/makefiles/common.mk
+include $(THEOS)/makefiles/common.mk
 
 BUNDLE_NAME = ColorBannersPrefs
 ColorBannersPrefs_FILES = ColorBannersPrefs.mm ColorBannersCells.m
