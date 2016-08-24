@@ -89,7 +89,7 @@ static BOOL proxy_isDarkColor(int color) {
 
 - (int)colorForImage:(UIImage *)image {
   if (!image) {
-    CBRLOG("No image given when requesting analysis!");
+    CBRLOG(@"No image given when requesting analysis!");
   }
   return proxy_colorForImage(image);
 }
