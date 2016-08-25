@@ -113,6 +113,7 @@ static void showTestBanner(CFNotificationCenterRef center, void *observer, CFStr
   BBBulletin *bulletin = [[[%c(BBBulletinRequest) alloc] init] autorelease];
   bulletin.title = @"ColorBanners";
   bulletin.message = @"This is a test banner!";
+  bulletin.bulletinID = @"com.golddavid.colorbanners";
   bulletin.sectionID = [CBRAppList randomAppIdentifier];
   bulletin.defaultAction = [%c(BBAction) action];
 
