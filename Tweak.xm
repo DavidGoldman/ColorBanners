@@ -496,8 +496,15 @@ static void respring(CFNotificationCenterRef center, void *observer, CFStringRef
     compositingFilter = @"colorDodgeBlendMode";
   }
 
-  textView.relevanceDateLabel.layer.compositingFilter = compositingFilter;
-  [view _setRelevanceDateColor:dateColor];
+  // Auki 2 Support.
+  if (textView.class == %c(KJUARRTextViewScrollContainerView)) {
+    KJUARRTextViewScrollContainerView *aukiView = (KJUARRTextViewScrollContainerView *)textView;
+    [aukiView setRelevanceDateLabelLayerCompositingFilter:compositingFilter];
+    [aukiView setRelevanceDateColor:dateColor];
+  } else {
+    textView.relevanceDateLabel.layer.compositingFilter = compositingFilter;
+    [view _setRelevanceDateColor:dateColor];
+  }
   [textView setPrimaryTextColor:textColor];
   [textView setSecondaryTextColor:textColor];
 

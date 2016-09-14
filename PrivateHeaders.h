@@ -344,3 +344,8 @@
 - (id)_viewDelegate;
 @end
 
+#pragma mark - Auki 2 support
+@interface KJUARRTextViewScrollContainerView : NSObject
+- (void)setRelevanceDateColor:(UIColor *)color;
+- (void)setRelevanceDateLabelLayerCompositingFilter:(NSString *)compositingFilter;
+@end
